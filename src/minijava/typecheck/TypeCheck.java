@@ -48,8 +48,13 @@ public abstract class TypeCheck {
 
 	public static void check(String folder) {
 		File f = new File(folder);
-		File[] listOfFiles = f.listFiles();
 
+		if (!f.isDirectory()) {
+			System.out.println("Folder not found");
+			return;
+		}
+
+		File[] listOfFiles = f.listFiles();
 		for (File file : listOfFiles) {
 			if (file.isFile()) {
 				check(file);
