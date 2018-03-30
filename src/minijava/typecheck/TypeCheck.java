@@ -46,19 +46,21 @@ public abstract class TypeCheck {
 		}
 	}
 
-	public static void check(String folder) {
-		File f = new File(folder);
+	public static void check(String src) {
+		File f = new File(src);
 
-		if (!f.isDirectory()) {
-			System.out.println("Folder not found");
-			return;
-		}
-
-		File[] listOfFiles = f.listFiles();
-		for (File file : listOfFiles) {
-			if (file.isFile()) {
-				check(file);
+		if (f.isDirectory()) {
+			File[] listOfFiles = f.listFiles();
+			for (File file : listOfFiles) {
+				if (file.isFile()) {
+					check(file);
+				}
 			}
+		} else if (f.isFile()) {
+			check(f);
+		} else {
+			System.out.println(src + " is not a folder nor a file");
+			return;
 		}
 
 		System.out.println("DONE");
