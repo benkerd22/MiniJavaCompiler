@@ -17,6 +17,10 @@ Windows PowerShell:
     
 
 ### Run
-Assume that the `.class` files in `bin`, to run the project:
+Assume that the project `.class` files are stored in `bin`, to compile a minijava source file `a.java`:
 
-    java -cp bin Main [file or folder]  
+    java -cp bin Main a.java
+
+Given multipule source files in a folder `samples`, you can compile them at one time:  
+
+    java -cp bin Main samples
