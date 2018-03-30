@@ -13,13 +13,18 @@ abstract class Java {
 			Undefined = new JUndefined();
 	private static JType String = new JClass(new Identifier(new NodeToken("String")), null, null, null),
 			ArrayString = new JArray(String);
-	private static HashMap<String, JType> class_list = new HashMap<String, JType>();
-	//private static HashMap<String, JBuiltIn> built_in_list = new HashMap<String, JBuiltIn>();
+	private static HashMap<String, JType> classes = new HashMap<String, JType>();	// user defined classes
+	private static HashMap<String, JType> bin_classes = new HashMap<String, JType>();	// bulit-in classes
 
 	public static void init(Goal _root, String _filename) {
 		root = _root;
 		filename = _filename;
-		class_list.clear();
+		classes.clear();
+		bin_classes.put("String", String);
+		// It seems that "String" will NOT be recognized as a <IDENTIFIER>...
+		// thus the warning is unnecessary.
+		// However, it is allowed in Java.
+		// So why not implement it? (^_^)
 	}
 
 	public static JType Int() {
@@ -46,17 +51,22 @@ abstract class Java {
 		return Undefined;
 	}
 
-	public static void addClass(String name, JClass type) {
-		if (class_list.containsKey(name)) {
+	public static void declareClass(String name, JClass type) {	// We already have a JClass object, so we don't need a Identifier as an argument
+		if (classes.containsKey(name)) {
 			ErrorHandler.send("Class " + name + " is already defined", type.Node());
 		} else {
-			class_list.put(name, type);
+			if (bin_classes.containsKey(name))
+				ErrorHandler.warn("Class " + name + " may conflict with a pre-defined class", type.Node());	// the warning is unnecessary.
+
+			classes.put(name, type);
 		}
 	}
 
 	private static JType getClass(String name, Node n) {
-		if (class_list.containsKey(name)) {
-			return class_list.get(name);
+		if (classes.containsKey(name)) {
+			return classes.get(name);
+		} else if (bin_classes.containsKey(name)) {
+			return bin_classes.get(name);
 		} else {
 			ErrorHandler.send("Try to access an undefined type " + name, n);
 			return Undefined;
@@ -83,12 +93,12 @@ abstract class Java {
 	}
 
 	private static void release() {
-		for (Map.Entry<String, JType> e : class_list.entrySet()) {
+		for (Map.Entry<String, JType> e : classes.entrySet()) {
 			JClass c = (JClass) e.getValue();
 			c.release();
 		}
 
-		for (Map.Entry<String, JType> e : class_list.entrySet()) {
+		for (Map.Entry<String, JType> e : classes.entrySet()) {
 			JClass c = (JClass) e.getValue();
 			JClass p = c.Father();
 
@@ -101,21 +111,21 @@ abstract class Java {
 			}
 		}
 
-		for (Map.Entry<String, JType> e : class_list.entrySet()) {
+		for (Map.Entry<String, JType> e : classes.entrySet()) {
 			JClass c = (JClass) e.getValue();
 			c.checkMethods();
 		}
 	}
 
 	public static void buildScope() {
-		for (Map.Entry<String, JType> e : class_list.entrySet()) {
+		for (Map.Entry<String, JType> e : classes.entrySet()) {
 			JClass c = (JClass) e.getValue();
 			c.buildScope();
 		}
 	}
 
 	public static void show() {
-		for (Map.Entry<String, JType> e : class_list.entrySet()) {
+		for (Map.Entry<String, JType> e : classes.entrySet()) {
 			JClass c = (JClass) e.getValue();
 			c.info();
 		}

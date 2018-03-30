@@ -12,7 +12,7 @@ class ClassTreeBuilder extends DepthFirstVisitor {
 
 	public void visit(MainClass n) {
 		JClass mc = new JClass(n);
-		Java.addClass(mc.Name(), mc);
+		Java.declareClass(mc.Name(), mc);
 
 		if (!filename.equals(mc.Name() + ".java")) {
 			ErrorHandler.send("Missing main class " + filename.substring(0, filename.length() - 5), n.f1);
@@ -21,11 +21,11 @@ class ClassTreeBuilder extends DepthFirstVisitor {
 
 	public void visit(ClassDeclaration n) {
 		JClass c = new JClass(n.f1, null, n.f3, n.f4);
-		Java.addClass(c.Name(), c);
+		Java.declareClass(c.Name(), c);
 	}
 
 	public void visit(ClassExtendsDeclaration n) {
 		JClass c = new JClass(n.f1, n.f3, n.f5, n.f6);
-		Java.addClass(c.Name(), c);
+		Java.declareClass(c.Name(), c);
 	}
 }

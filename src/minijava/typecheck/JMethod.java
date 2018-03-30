@@ -71,4 +71,9 @@ class JMethod {
 
 		return true;
 	}
+
+	public void SetAsMainRoute(Identifier args) {
+		scope.declare(Java.ArrayString(), args);
+		scope.getVar(args).assign();
+	}
 }

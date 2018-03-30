@@ -1,14 +1,14 @@
-import java.io.*;
 import minijava.typecheck.TypeCheck;
 
 public class Main {
-	String s;
 	/*	TODO
-			s.compareTo(anotherString)
-			s.hashCode()
-			s.indexOf(str)
-			s.isEmpty()
-			s.length()*/
+		String s;
+		s.compareTo(anotherString)
+		s.hashCode()
+		s.indexOf(str)
+		s.isEmpty()
+		s.length()
+	*/
 
 	public static void main(String[] args) {
 		try {

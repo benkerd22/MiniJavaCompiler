@@ -116,7 +116,10 @@ class JClass extends JType {
 
 		ArrayList<JType> list = new ArrayList<JType>();
 		list.add(Java.ArrayString());
+
 		JMethod m = new JMethod(new Identifier(n.f6), this, Java.Undefined(), list, null, n.f14, n.f15, null);
+		m.SetAsMainRoute(n.f11);
+
 		add_method(m);
 	}
 
