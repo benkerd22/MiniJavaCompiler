@@ -1,8 +1,9 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import minijava.syntaxtree.*;
+import tools.*;
 
-class JBoolean extends JType {
+public class JBoolean extends JType {
 	public String Name() {
 		return "Boolean";
 	}

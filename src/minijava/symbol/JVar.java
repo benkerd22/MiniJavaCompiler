@@ -1,4 +1,4 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import minijava.syntaxtree.*;
 
@@ -10,14 +10,14 @@ public class JVar {
 	private long value = 0;
 	private boolean assigned;
 
-	JVar(Identifier _id, JType _type) {
+	public JVar(Identifier _id, JType _type) {
 		id = _id;
 		type = _type;
 		assigned = false;
 		where = _id;
 	}
 
-	JVar(Node _where, JType _type) {
+	public JVar(Node _where, JType _type) {
 		id = null;
 		type = _type;
 		assigned = false;

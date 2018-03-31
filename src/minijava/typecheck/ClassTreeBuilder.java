@@ -2,17 +2,19 @@ package minijava.typecheck;
 
 import minijava.syntaxtree.*;
 import minijava.visitor.*;
+import minijava.symbol.*;
+import tools.*;
 
-class ClassTreeBuilder extends DepthFirstVisitor {
+public class ClassTreeBuilder extends DepthFirstVisitor {
 	private String filename = "";
 
-	ClassTreeBuilder(String _filename) {
+	public ClassTreeBuilder(String _filename) {
 		filename = _filename;
 	}
 
 	public void visit(MainClass n) {
 		JClass mc = new JClass(n);
-		Java.declareClass(mc.Name(), mc);
+		MJava.declareClass(mc.Name(), mc);
 
 		if (!filename.equals(mc.Name() + ".java")) {
 			ErrorHandler.send("Missing main class " + filename.substring(0, filename.length() - 5), n.f1);
@@ -21,11 +23,11 @@ class ClassTreeBuilder extends DepthFirstVisitor {
 
 	public void visit(ClassDeclaration n) {
 		JClass c = new JClass(n.f1, null, n.f3, n.f4);
-		Java.declareClass(c.Name(), c);
+		MJava.declareClass(c.Name(), c);
 	}
 
 	public void visit(ClassExtendsDeclaration n) {
 		JClass c = new JClass(n.f1, n.f3, n.f5, n.f6);
-		Java.declareClass(c.Name(), c);
+		MJava.declareClass(c.Name(), c);
 	}
 }

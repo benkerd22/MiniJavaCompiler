@@ -1,11 +1,12 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import minijava.syntaxtree.*;
+import tools.*;
 
-class JArray extends JType {
+public class JArray extends JType {
 	private JType type;
 
-	JArray(JType _type) {
+	public JArray(JType _type) {
 		type = _type;
 	}
 

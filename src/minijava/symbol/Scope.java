@@ -1,19 +1,20 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import java.util.*;
 import minijava.syntaxtree.*;
+import tools.*;
 
-class Scope {
+public class Scope {
 	private HashMap<String, JVar> vars = new HashMap<String, JVar>();
 	private Scope father;
 	private JClass owner;
 
-	Scope(Scope _father, JClass _owner) {
+	public Scope(Scope _father, JClass _owner) {
 		father = _father;
 		owner = _owner;
 	}
 
-	Scope(Scope _father) {
+	public Scope(Scope _father) {
 		father = _father;
 		owner = father.owner;
 	}

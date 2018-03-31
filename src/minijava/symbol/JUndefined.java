@@ -1,8 +1,9 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import minijava.syntaxtree.*;
+import tools.*;
 
-class JUndefined extends JType {
+public class JUndefined extends JType {
 	public String Name() {
 		return "Undefined";
 	}

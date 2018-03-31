@@ -1,9 +1,9 @@
 package minijava.minijava2piglet;
 
-import minijava.typecheck.*;
+import minijava.symbol.*;
 
 public class ToPiglet {
     public static void compile(String filename) {
-        Java.show();
+        MJava.show();
     }
 }

@@ -1,7 +1,7 @@
-package minijava.typecheck;
+package tools;
 
 import minijava.syntaxtree.*;
-import tools.*;
+import minijava.symbol.*;
 
 public class ErrorHandler {
 	public static void send(String msg) {

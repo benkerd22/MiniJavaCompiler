@@ -1,9 +1,10 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import minijava.syntaxtree.*;
+import minijava.typecheck.*;
 import java.util.*;
 
-class JMethod {
+public class JMethod {
 	class Body {
 		NodeOptional para;
 		NodeListOptional var, st;
@@ -73,7 +74,7 @@ class JMethod {
 	}
 
 	public void SetAsMainRoute(Identifier args) {
-		scope.declare(Java.ArrayString(), args);
+		scope.declare(MJava.ArrayString(), args);
 		scope.getVar(args).assign();
 	}
 }

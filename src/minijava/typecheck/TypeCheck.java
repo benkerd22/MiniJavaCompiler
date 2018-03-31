@@ -2,6 +2,7 @@ package minijava.typecheck;
 
 import java.io.*;
 import minijava.*;
+import minijava.symbol.*;
 
 // 数组越界 ？？
 // 数组下标为负数 ?
@@ -35,9 +36,9 @@ public abstract class TypeCheck {
 			String filename = f.getName();
 			MJPHelper.accept(f);
 
-			Java.init(MiniJavaParser.Goal(), filename);
-			Java.buildClass();
-			Java.buildScope();
+			MJava.init(MiniJavaParser.Goal(), filename);
+			MJava.buildClass();
+			MJava.buildScope();
 			//Java.show();
 
 			System.out.println("\n");

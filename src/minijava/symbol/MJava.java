@@ -1,9 +1,11 @@
-package minijava.typecheck;
+package minijava.symbol;
 
 import java.util.*;
 import minijava.syntaxtree.*;
+import minijava.typecheck.*;
+import tools.*;
 
-public abstract class Java {
+public abstract class MJava {
 	private static Goal root;
 	private static String filename;
 	private static JType Int = new JInt(), Boolean = new JBoolean(), ArrayInt = new JArray(Int),
