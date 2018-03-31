@@ -4,6 +4,7 @@ class ccc {
         int b;
         int c;
         int d;
+        args[1] = 1;
         c= 1;
         d=100;
         a = new int[ 1-100 ];
@@ -44,7 +45,7 @@ class A {
     int i;
 
     public int index(int uu, boolean jj, int[] qq, B bb) {
-
+        int uu;
         return 0;
     }
 
