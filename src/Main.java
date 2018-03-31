@@ -1,4 +1,5 @@
 import minijava.typecheck.TypeCheck;
+import minijava.minijava2piglet.*;
 
 public class Main {
 	/*	TODO
@@ -12,14 +13,13 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			//System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("log.txt"))));
-			//TypeCheck.check(new File("minijava/samples/ccc.java"));
-			//TypeCheck.check("samples");
 			if (args.length > 1) {
 				TypeCheck.check(args[1]);
 			} else {
-				TypeCheck.check("samples");
+				TypeCheck.check("samples/Factorial.java");
 			}
+
+			ToPiglet.compile("samples/Factorial.java");
 		} catch (Exception e) {
 			System.out.println("Oops");
 			e.printStackTrace();

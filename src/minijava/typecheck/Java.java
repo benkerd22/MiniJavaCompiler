@@ -3,10 +3,7 @@ package minijava.typecheck;
 import java.util.*;
 import minijava.syntaxtree.*;
 
-class Root {
-}
-
-abstract class Java {
+public abstract class Java {
 	private static Goal root;
 	private static String filename;
 	private static JType Int = new JInt(), Boolean = new JBoolean(), ArrayInt = new JArray(Int),
