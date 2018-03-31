@@ -11,10 +11,10 @@ abstract class Java {
 	private static String filename;
 	private static JType Int = new JInt(), Boolean = new JBoolean(), ArrayInt = new JArray(Int),
 			Undefined = new JUndefined();
-	private static JType String = new JClass(new Identifier(new NodeToken("String")), null, null, null),
-			ArrayString = new JArray(String);
-	private static HashMap<String, JType> classes = new HashMap<String, JType>();	// user defined classes
-	private static HashMap<String, JType> bin_classes = new HashMap<String, JType>();	// bulit-in classes
+	private static JClass String = new JClass(new Identifier(new NodeToken("String")), null, null, null);
+	private static JType ArrayString = new JArray(String);
+	private static HashMap<String, JClass> classes = new HashMap<String, JClass>();	// user defined classes
+	private static HashMap<String, JClass> bin_classes = new HashMap<String, JClass>();	// bulit-in classes
 
 	public static void init(Goal _root, String _filename) {
 		root = _root;
@@ -93,13 +93,13 @@ abstract class Java {
 	}
 
 	private static void release() {
-		for (Map.Entry<String, JType> e : classes.entrySet()) {
-			JClass c = (JClass) e.getValue();
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
 			c.release();
 		}
 
-		for (Map.Entry<String, JType> e : classes.entrySet()) {
-			JClass c = (JClass) e.getValue();
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
 			JClass p = c.Father();
 
 			while (p != null) {
@@ -111,22 +111,22 @@ abstract class Java {
 			}
 		}
 
-		for (Map.Entry<String, JType> e : classes.entrySet()) {
-			JClass c = (JClass) e.getValue();
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
 			c.checkMethods();
 		}
 	}
 
 	public static void buildScope() {
-		for (Map.Entry<String, JType> e : classes.entrySet()) {
-			JClass c = (JClass) e.getValue();
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
 			c.buildScope();
 		}
 	}
 
 	public static void show() {
-		for (Map.Entry<String, JType> e : classes.entrySet()) {
-			JClass c = (JClass) e.getValue();
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
 			c.info();
 		}
 	}
