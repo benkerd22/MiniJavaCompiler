@@ -23,7 +23,7 @@ class JUndefined extends JType {
 
 	public boolean Assignable(JType a, boolean report, Node n) {
 		if (report)
-			ErrorHandler.send("Use type Undefined as left value", n);
+			ErrorHandler.send("Use a Undefined variable as left value", n);
 		return false;
 	}
 }
@@ -49,11 +49,11 @@ class JBoolean extends JBuiltIn {
 	}
 
 	public static long True() {
-		return 2;
+		return -2;
 	}
 
 	public static long False() {
-		return 1;
+		return -1;
 	}
 
 	public boolean Assignable(JType a, boolean report, Node n) {
