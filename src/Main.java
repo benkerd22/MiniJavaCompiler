@@ -13,13 +13,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			if (args.length > 1) {
-				TypeCheck.check(args[1]);
-			} else {
-				TypeCheck.check("samples/Factorial.java");
-			}
+			TypeCheck.check("samples/Factorial.java");
 
-			ToPiglet.compile("samples/Factorial.java");
+			ToPiglet.compile("Factorial.pg");
 		} catch (Exception e) {
 			System.out.println("Oops");
 			e.printStackTrace();

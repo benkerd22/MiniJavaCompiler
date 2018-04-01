@@ -7,21 +7,25 @@ import minijava.symbol.*;
 import tools.*;
 
 public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
+	public ScopeBuilder() {
+		Scope.init();
+	}
+
 	public JVar visit(VarDeclaration n, Scope scope) {
-		scope.declare(MJava.get(n.f0.f0.choice), n.f1);
+		scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
 
 		return null;
 	}
 
 	public JVar visit(FormalParameter n, Scope scope) {
-		scope.declare(MJava.get(n.f0.f0.choice), n.f1);
+		scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
 		scope.getVar(n.f1).assign(); // assume arguments is initialized
 
 		return null;
 	}
 
 	public JVar visit(Block n, Scope scope) {
-		Scope new_scope = new Scope(scope);
+		Scope new_scope = new Scope(scope, n);
 		n.f1.accept(this, new_scope);
 
 		return null;
@@ -33,11 +37,11 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		left.Type().Assignable(right.Type(), true, n);
 		if (left.Type() == MJava.ArrayInt()) {
-			left.assign(right.Value());
+			left.assign(right.Val());
 		} else
 			left.assign();
 
-		return null;
+		return left;
 	}
 
 	public JVar visit(ArrayAssignmentStatement n, Scope scope) {
@@ -54,7 +58,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		JVar right = n.f5.accept(this, scope);
 		leftType.Assignable(right.Type(), true, n);
 
-		return a.assign();
+		return new JVar(n, leftType).assign();
 	}
 
 	public JVar visit(IfStatement n, Scope scope) {
@@ -64,9 +68,9 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		n.f4.accept(this, scope);
 		n.f6.accept(this, scope);
 
-		if (exp.Value() == JBoolean.True()) {
+		if (exp.Val() == JBoolean.True()) {
 			ErrorHandler.warn("Dead code", n.f6);
-		} else if (exp.Value() == JBoolean.False()) {
+		} else if (exp.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f4);
 		}
 
@@ -79,9 +83,9 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		n.f4.accept(this, scope);
 
-		if (exp.Value() == JBoolean.False()) {
+		if (exp.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f4);
-		} else if (exp.Value() == JBoolean.True()) {
+		} else if (exp.Val() == JBoolean.True()) {
 			ErrorHandler.warn("Dead loop", n.f4);
 		}
 
@@ -107,10 +111,10 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		MJava.Boolean().Assignable(b.Type(), true, n);
 
 		long val = 0;
-		if (a.Value() == JBoolean.False()) {
+		if (a.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f2);
 			val = JBoolean.False();
-		} else if (b.Value() == JBoolean.False()) {
+		} else if (b.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f0);
 			val = JBoolean.False();
 		}
@@ -168,9 +172,9 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		MJava.Int().Assignable(exp.Type(), true, n);
 
-		if (a.Value() != 0 && exp.Value() != 0) {
-			if (exp.Value() < 0 || exp.Value() >= a.Value()) {
-				ErrorHandler.send("Array index out of range: " + exp.Value(), n);
+		if (a.Val() != 0 && exp.Val() != 0) {
+			if (exp.Val() < 0 || exp.Val() >= a.Val()) {
+				ErrorHandler.send("Array index out of range: " + exp.Val(), n);
 			}
 		}
 
@@ -206,10 +210,9 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 			return new JVar(n, MJava.Undefined()).assign();
 		}
 
-		String sid = n.f2.f0.toString();
-		JMethod m = ((JClass) a.Type()).queryMethod(sid);
+		JMethod m = ((JClass) a.Type()).queryMethod(n.f2);
 		if (m == null) {
-			ErrorHandler.send("Class " + ((JClass) a.Type()).Name() + " has no method " + sid, n);
+			ErrorHandler.send("Class " + ((JClass) a.Type()).Name() + " has no method " + n.f2.f0.toString(), n);
 			return new JVar(n, MJava.Undefined()).assign();
 		}
 
@@ -284,11 +287,11 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		MJava.Int().Assignable(exp.Type(), true, n);
 
-		return new JVar(n, MJava.ArrayInt()).assign(exp.Value());
+		return new JVar(n, MJava.ArrayInt()).assign(exp.Val());
 	}
 
 	public JVar visit(AllocationExpression n, Scope scope) {
-		return new JVar(n, MJava.get(n.f1)).assign();
+		return new JVar(n, MJava.getType(n.f1)).assign();
 	}
 
 	public JVar visit(NotExpression n, Scope scope) {
@@ -296,9 +299,9 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		MJava.Boolean().Assignable(exp.Type(), true, n);
 
-		if (exp.Value() == JBoolean.False()) {
+		if (exp.Val() == JBoolean.False()) {
 			exp.assign(JBoolean.True());
-		} else if (exp.Value() == JBoolean.True()) {
+		} else if (exp.Val() == JBoolean.True()) {
 			exp.assign(JBoolean.False());
 		}
 		return exp;

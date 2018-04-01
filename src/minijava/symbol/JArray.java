@@ -14,6 +14,10 @@ public class JArray extends JType {
 		return type.Name() + "[]";
 	}
 
+	public int Size() {
+		return 4;	// as a pointer ... maybe ...
+	}
+
 	public JType ElementType() {
 		return type;
 	}

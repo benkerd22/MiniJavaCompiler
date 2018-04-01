@@ -3,11 +3,13 @@ package minijava.symbol;
 import java.util.*;
 import minijava.syntaxtree.*;
 import minijava.typecheck.*;
+import minijava.minijava2piglet.*;
 import tools.*;
 
 public abstract class MJava {
 	private static Goal root;
 	private static String filename;
+	private static JClass main_class;
 	private static JType Int = new JInt(), Boolean = new JBoolean(), ArrayInt = new JArray(Int),
 			Undefined = new JUndefined();
 	private static JClass String = new JClass(new Identifier(new NodeToken("String")), null, null, null);
@@ -21,7 +23,7 @@ public abstract class MJava {
 		classes.clear();
 		bin_classes.put("String", String);
 		// It seems that "String" will NOT be recognized as a <IDENTIFIER>...
-		// thus the warning is unnecessary.
+		// thus the warning below is unnecessary.
 		// However, it is allowed in Java.
 		// So why not implement it? (^_^)
 	}
@@ -50,6 +52,11 @@ public abstract class MJava {
 		return Undefined;
 	}
 
+	public static void declareMainClass(JClass type) {
+		main_class = type;
+		declareClass(type.Name(), type);
+	}
+
 	public static void declareClass(String name, JClass type) {	// We already have a JClass object, so we don't need a Identifier as an argument
 		if (classes.containsKey(name)) {
 			ErrorHandler.send("Class " + name + " is already defined", type.Node());
@@ -72,7 +79,7 @@ public abstract class MJava {
 		}
 	}
 
-	public static JType get(Node type) {
+	public static JType getType(Node type) {
 		if (type instanceof ArrayType) {
 			return ArrayInt;
 		} else if (type instanceof BooleanType) {
@@ -127,6 +134,19 @@ public abstract class MJava {
 		for (Map.Entry<String, JClass> e : classes.entrySet()) {
 			JClass c = e.getValue();
 			c.info();
+		}
+	}
+
+	public static void buildCode() {
+		JMethod m = main_class.queryMethod(new Identifier(new NodeToken("main")));
+		m.buildCode_asMain();
+
+		Code.clearFunc();
+
+		int index = 0;
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
+			index = c.buildCode(index);
 		}
 	}
 }

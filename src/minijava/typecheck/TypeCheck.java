@@ -39,7 +39,7 @@ public abstract class TypeCheck {
 			MJava.init(MiniJavaParser.Goal(), filename);
 			MJava.buildClass();
 			MJava.buildScope();
-			//Java.show();
+			//MJava.show();
 
 			System.out.println("\n");
 		} catch (Exception e) {

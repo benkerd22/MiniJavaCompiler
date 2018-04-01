@@ -1,5 +1,6 @@
 package minijava.symbol;
 
+import java.security.Identity;
 import java.util.*;
 import minijava.syntaxtree.*;
 import minijava.visitor.*;
@@ -13,6 +14,8 @@ public class JClass extends JType {
 	private JClass father = null;
 	private HashMap<String, JMethod> methods = new HashMap<String, JMethod>();
 	private HashMap<String, JType> vars = new HashMap<String, JType>();
+	private HashMap<String, Integer> biases = new HashMap<String, Integer>();
+	private int size = 0;
 
 	public JClass(MainClass n) {
 		name = n.f1;
@@ -51,27 +54,35 @@ public class JClass extends JType {
 			ErrorHandler.send("Dupilcate variable " + sid + " in Class " + Name(), id);
 		} else {
 			vars.put(sid, type);
+			size += type.Size();
 		}
 	}
 
-	public JType queryType(String id) {
+	public JVar queryVar(Identifier id) {
+		String sid = id.f0.toString();
+
 		JClass p = this;
 		while (p != null) {
-			if (p.vars.containsKey(id)) {
-				return p.vars.get(id);
+			if (p.vars.containsKey(sid)) {
+				return new JVar(id, p.vars.get(sid))
+				.assign()
+				.setVola(true)
+				.setBias(p.biases.get(sid));
 			}
 
 			p = p.father;
 		}
 
-		return MJava.Undefined();
+		return new JVar(id, MJava.Undefined()).assign();
 	}
 
-	public JMethod queryMethod(String id) {
+	public JMethod queryMethod(Identifier id) {
+		String sid = id.f0.toString();
+
 		JClass p = this;
 		while (p != null) {
-			if (p.methods.containsKey(id)) {
-				return p.methods.get(id);
+			if (p.methods.containsKey(sid)) {
+				return p.methods.get(sid);
 			}
 
 			p = p.father;
@@ -82,7 +93,7 @@ public class JClass extends JType {
 
 	private void release_father() {
 		if (f_node != null) {
-			JType _father = MJava.get(f_node);
+			JType _father = MJava.getType(f_node);
 			if (_father == MJava.Undefined()) {
 				ErrorHandler.send("Class " + Name() + " extends an undefined Class");
 			} else
@@ -93,7 +104,7 @@ public class JClass extends JType {
 	private void release_methods() {
 		class ParaListHelper extends GJVoidDepthFirst<ArrayList<JType>> {
 			public void visit(FormalParameter n, ArrayList<JType> list) {
-				JType type = MJava.get(n.f0.f0.choice);
+				JType type = MJava.getType(n.f0.f0.choice);
 				//String name = n.f1.f0.toString();
 
 				list.add(type);
@@ -106,7 +117,7 @@ public class JClass extends JType {
 
 				n.f4.accept(new ParaListHelper(), para_list);
 
-				JMethod m = new JMethod(n.f2, c, MJava.get(n.f1.f0.choice), para_list, n.f4, n.f7, n.f8, n.f10);
+				JMethod m = new JMethod(n.f2, c, MJava.getType(n.f1.f0.choice), para_list, n.f4, n.f7, n.f8, n.f10);
 
 				c.add_method(m);
 			}
@@ -121,7 +132,7 @@ public class JClass extends JType {
 	private void release_vars() {
 		class VarListHelper extends GJVoidDepthFirst<JClass> {
 			public void visit(VarDeclaration n, JClass c) {
-				c.add_var(n.f1, MJava.get(n.f0.f0.choice));
+				c.add_var(n.f1, MJava.getType(n.f0.f0.choice));
 			}
 		}
 
@@ -129,6 +140,20 @@ public class JClass extends JType {
 			return;
 
 		v_node.accept(new VarListHelper(), this);
+	}
+
+	private void release_biases() {
+		JClass p = this.father;
+		int base = 0;
+		while (p != null) {
+			base += p.size;
+			p = p.father;
+		}
+
+		for (Map.Entry<String, JType> e : vars.entrySet()) {
+			biases.put(e.getKey(), base);
+			base += e.getValue().Size();
+		}
 	}
 
 	private void strict_var_method() {
@@ -149,6 +174,7 @@ public class JClass extends JType {
 		release_father();
 		release_methods();
 		release_vars();
+		release_biases();
 
 		strict_var_method();
 	}
@@ -178,6 +204,16 @@ public class JClass extends JType {
 			JMethod m = e.getValue();
 			m.buildScope();
 		}
+	}
+
+	public int buildCode(int index) {
+		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
+			JMethod m = e.getValue();
+			m.buildCode(index);
+			index++;
+		}
+
+		return index;
 	}
 
 	public Set<Map.Entry<String, JType>> var_entry() {
@@ -210,6 +246,14 @@ public class JClass extends JType {
 
 	public JClass Father() {
 		return father;
+	}
+
+	public int Size() {
+		return 4; // as a pointer
+	}
+
+	public int instanceSize() {
+		return size;
 	}
 
 	public boolean Assignable(JType c, boolean report, Node n) {

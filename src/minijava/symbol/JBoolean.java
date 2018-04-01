@@ -8,6 +8,10 @@ public class JBoolean extends JType {
 		return "Boolean";
 	}
 
+	public int Size() {
+		return 4;
+	}
+
 	public static long True() {
 		return -2;
 	}

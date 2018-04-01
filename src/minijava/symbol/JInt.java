@@ -8,6 +8,10 @@ public class JInt extends JType {
 		return "Int";
 	}
 
+	public int Size() {
+		return 4;
+	}
+
 	public boolean Assignable(JType a, boolean report, Node n) {
 		if (a instanceof JInt)
 			return true;

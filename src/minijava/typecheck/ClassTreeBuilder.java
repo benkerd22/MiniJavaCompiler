@@ -14,7 +14,7 @@ public class ClassTreeBuilder extends DepthFirstVisitor {
 
 	public void visit(MainClass n) {
 		JClass mc = new JClass(n);
-		MJava.declareClass(mc.Name(), mc);
+		MJava.declareMainClass(mc);
 
 		if (!filename.equals(mc.Name() + ".java")) {
 			ErrorHandler.send("Missing main class " + filename.substring(0, filename.length() - 5), n.f1);
