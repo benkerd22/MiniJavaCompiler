@@ -1,7 +1,6 @@
 package minijava.minijava2piglet;
 
 import java.io.*;
-import java.util.*;
 
 public class Code {
     private static PrintWriter out;
