@@ -4,8 +4,6 @@ import java.io.*;
 import minijava.*;
 import minijava.symbol.*;
 
-// 数组越界 ？？
-// 数组下标为负数 ?
 // 整型字面值过大
 // 缺少主类
 // 死代码消除（警告）

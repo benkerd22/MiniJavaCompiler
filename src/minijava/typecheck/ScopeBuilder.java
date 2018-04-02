@@ -32,10 +32,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		JVar right = n.f2.accept(this, scope);
 
 		left.Type().Assignable(right.Type(), true, n);
-		if (left.Type() == MJava.ArrayInt()) {
-			left.assign(right.Val());
-		} else
-			left.assign();
+		left.assign();
 
 		return left;
 	}
@@ -106,7 +103,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		MJava.Boolean().Assignable(a.Type(), true, n);
 		MJava.Boolean().Assignable(b.Type(), true, n);
 
-		long val = 0;
+		int val = 0;
 		if (a.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f2);
 			val = JBoolean.False();
@@ -167,12 +164,6 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		}
 
 		MJava.Int().Assignable(exp.Type(), true, n);
-
-		if (a.Val() != 0 && exp.Val() != 0) {
-			if (exp.Val() < 0 || exp.Val() >= a.Val()) {
-				ErrorHandler.send("Array index out of range: " + exp.Val(), n);
-			}
-		}
 
 		return new JVar(n, ((JArray) a.Type()).ElementType()).assign();
 	}
@@ -240,7 +231,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 	public JVar visit(PrimaryExpression n, Scope scope) {
 		JVar exp = n.f0.accept(this, scope);
 		if (!exp.isAssigned()) {
-			ErrorHandler.send("variable " + exp.Id() + " might not have been initialized", n);
+			ErrorHandler.warn("variable " + exp.Id() + " might not have been initialized", n);
 		}
 
 		return exp;
@@ -283,7 +274,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		MJava.Int().Assignable(exp.Type(), true, n);
 
-		return new JVar(n, MJava.ArrayInt()).assign(exp.Val());
+		return new JVar(n, MJava.ArrayInt()).assign();
 	}
 
 	public JVar visit(AllocationExpression n, Scope scope) {

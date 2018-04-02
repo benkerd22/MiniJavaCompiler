@@ -12,12 +12,12 @@ public class JBoolean extends JType {
 		return 4;
 	}
 
-	public static long True() {
-		return -2;
+	public static int True() {
+		return 1;
 	}
 
-	public static long False() {
-		return -1;
+	public static int False() {
+		return 0;
 	}
 
 	public boolean Assignable(JType a, boolean report, Node n) {

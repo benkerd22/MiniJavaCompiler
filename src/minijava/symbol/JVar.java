@@ -7,7 +7,7 @@ public class JVar {
 	private Identifier id;
 	private Node where;
 	private JType type;
-	private long value = 0;	// for typecheck if out of array index
+	private int value = -1;	// for typecheck boolean literal only
 	private int reg = -1;	// TEMP (?) for piglet
 	private boolean assigned = false;	// for typecheck if unused
 	private boolean vola = false;	// is the Var volatile? ex. this.a, b[0]
@@ -71,7 +71,7 @@ public class JVar {
 		return this;
 	}
 
-	public JVar assign(long val) {
+	public JVar assign(int val) {
 		value = val;
 		assigned = true;
 		return this;
