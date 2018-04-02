@@ -92,7 +92,7 @@ public class JMethod {
 		body.para.accept(g, scope);
 		body.var.accept(g, scope);
 		// remember that paras includes "this"
-		Code.emit("f" + index + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
+		Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
 
 		body.st.accept(g, scope);
 		JVar ret = body.ret.accept(g, scope);

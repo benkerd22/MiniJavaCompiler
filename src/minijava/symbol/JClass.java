@@ -16,7 +16,7 @@ public class JClass extends JType {
 	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>();	// method biases in vTable
 	private HashMap<String, JType> vars = new HashMap<String, JType>();
 	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>();	// var biases in an instance
-	private int size = 0;
+	private int size = 0, heritage = 0;	// size count of vars && the vars that extends from fathers
 
 	public JClass(MainClass n) {
 		name = n.f1;
@@ -187,16 +187,17 @@ public class JClass extends JType {
 	}
 
 	public void buildvBiases() {
+		heritage = 0;
 		JClass p = this.father;
-		int base = 0;
 		while (p != null) {
-			base += p.size;
+			heritage += p.size;
 			p = p.father;
 		}
 
+		int bias = 0;
 		for (Map.Entry<String, JType> e : vars.entrySet()) {
-			vbiases.put(e.getKey(), base);
-			base += e.getValue().Size();
+			vbiases.put(e.getKey(), heritage + bias);
+			bias += e.getValue().Size();
 		}
 	}
 
@@ -228,7 +229,7 @@ public class JClass extends JType {
 		int i = 0;
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
 			JMethod m = e.getValue();
-			Code.mov(1, "f" + m.Index() + "_" + m.Name());
+			Code.mov(1, "f" + m.Index() + "_" + Name() + "_" + m.Name());
 			Code.store(0, i, 1);
 			i += 4;
 		}
@@ -257,6 +258,12 @@ public class JClass extends JType {
 				System.out.println("\t" + e.getValue().Name() + " " + e.getKey());
 			}
 		}
+		if (mbiases.size() != 0) {
+			System.out.println("  mbiases:");
+			for (Map.Entry<String, Integer> e : mbiases.entrySet()) {
+				System.out.println("\t" + e.getKey() + " " + e.getValue());
+			}
+		}
 	}
 
 	public Node Node() {
@@ -276,7 +283,7 @@ public class JClass extends JType {
 	}
 
 	public int instanceSize() {
-		return size;
+		return size + heritage;
 	}
 
 	public boolean Assignable(JType c, boolean report, Node n) {
