@@ -46,7 +46,6 @@ public class Scope {
 			return t;
 
 		// look up id in Class & Father Class
-		//return new JVar(id, owner.queryType(sid)).assign();
 		return owner.queryVar(id);
 	}
 

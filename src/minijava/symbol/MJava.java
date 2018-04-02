@@ -22,6 +22,7 @@ public abstract class MJava {
 		filename = _filename;
 		classes.clear();
 		bin_classes.put("String", String);
+		main_class = null;
 		// It seems that "String" will NOT be recognized as a <IDENTIFIER>...
 		// thus the warning below is unnecessary.
 		// However, it is allowed in Java.
@@ -151,7 +152,6 @@ public abstract class MJava {
 			c.buildClassCode();
 		}
 
-		int index = 0;
 		for (Map.Entry<String, JClass> e : classes.entrySet()) {
 			JClass c = e.getValue();
 			c.buildMethodCode();

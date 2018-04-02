@@ -3,6 +3,7 @@ package minijava.typecheck;
 import java.io.*;
 import minijava.*;
 import minijava.symbol.*;
+import tools.*;
 
 // 整型字面值过大
 // 缺少主类
@@ -23,45 +24,52 @@ class MJPHelper {
 		} catch (FileNotFoundException e) {
 			System.out.println(e.getMessage());
 		}
-
-		System.out.println("Type checking " + f.toPath());
 	}
 }
 
 public abstract class TypeCheck {
-	public static void check(final File f) {
+	public static boolean check(final File src) {
 		try {
-			String filename = f.getName();
-			MJPHelper.accept(f);
+			MJPHelper.accept(src);
+			MJava.init(MiniJavaParser.Goal(), src.getName());
+		} catch (ParseException e) {
+			System.out.println(e.getMessage());
+		}
 
-			MJava.init(MiniJavaParser.Goal(), filename);
-			MJava.buildClass();
-			MJava.buildScope();
-			//MJava.show();
+		System.out.println("Type checking " + src.toPath());
+		ErrorHandler.init();
 
-			System.out.println("\n");
-		} catch (Exception e) {
-			e.printStackTrace();
+		MJava.buildClass();
+		MJava.buildScope();
+
+		int err = ErrorHandler.Err();
+		if (err > 0) {
+			System.out.println("Found " + err + " errors");
+			return false;
+		} else {
+			System.out.println("Done");
+			return true;
 		}
 	}
 
-	public static void check(String src) {
+	public static boolean check(String src) {
 		File f = new File(src);
 
 		if (f.isDirectory()) {
+			return false;	// do not support dir
+			/*
 			File[] listOfFiles = f.listFiles();
 			for (File file : listOfFiles) {
 				if (file.isFile()) {
 					check(file);
 				}
 			}
+			*/
 		} else if (f.isFile()) {
-			check(f);
+			return check(f);
 		} else {
 			System.out.println(src + " is not a folder nor a file");
-			return;
+			return false;
 		}
-
-		System.out.println("DONE");
 	}
 }

@@ -38,7 +38,7 @@ public class Code {
         emitln("ERROR");
     }
 
-    // All the exp bellow stands for "SimpleExp"
+    // All the "String exp" bellow stands for "SimpleExp"
 
     public static void mov(int dreg, String exp) {
         emitln("MOVE TEMP " + dreg + " " + exp);

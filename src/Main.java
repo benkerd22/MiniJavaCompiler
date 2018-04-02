@@ -1,4 +1,4 @@
-import minijava.typecheck.TypeCheck;
+import minijava.typecheck.*;
 import minijava.minijava2piglet.*;
 
 public class Main {
@@ -13,9 +13,15 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			TypeCheck.check("samples/BubbleSort.java");
+			String def = "samples\\TreeVisitor.java"; // default source file
+			if (args.length > 1)
+				def = args[1];
 
-			ToPiglet.compile("out.pg");
+			boolean succ = TypeCheck.check(def);
+			if (!succ)
+				return;
+
+			ToPiglet.compile(def);
 		} catch (Exception e) {
 			System.out.println("Oops");
 			e.printStackTrace();

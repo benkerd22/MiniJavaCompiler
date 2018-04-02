@@ -4,7 +4,18 @@ import minijava.syntaxtree.*;
 import minijava.symbol.*;
 
 public class ErrorHandler {
+	private static int err;
+
+	public static void init() {
+		err = 0;
+	}
+
+	public static int Err() {
+		return err;
+	}
+
 	public static void send(String msg) {
+		err++;
 		System.out.println("\t" + msg);
 	}
 
