@@ -91,8 +91,17 @@ public class JMethod {
 
 		body.para.accept(g, scope);
 		body.var.accept(g, scope);
-		// remember that paras includes "this"
-		Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
+
+		if (paras.size() <= (20 - 1)) {
+			// remember that paras includes "this"
+			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
+		} else {
+			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [1]\nBEGIN\n", "");
+			for (int i = 1; i <= paras.size(); i++) {
+				Code.load(i, 0, i * 4);
+			}
+			Code.load(0, 0, 0);
+		}
 
 		body.st.accept(g, scope);
 		JVar ret = body.ret.accept(g, scope);

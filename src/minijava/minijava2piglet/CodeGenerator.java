@@ -275,7 +275,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         e.cg = this;
         e.scope = scope;
         e.list = new ArrayList<Integer>();
-        e.list.add(a.Reg());  // put this in TEMP 0
+        e.list.add(a.Reg());  // put "this" in TEMP 0
 
         n.f4.accept(new ExpressionListHelper(), e);
 
@@ -286,7 +286,20 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         Code.load(preg, a.Reg(), 0);
         Code.load(freg, preg, mb);
-        Code.call(rreg, "TEMP " + freg, e.list.toArray(new Integer[e.list.size()]));
+        if (e.list.size() <= 20) {
+            Code.call(rreg, "TEMP " + freg, e.list.toArray(new Integer[e.list.size()]));
+        } else {
+            int areg = Reg.getnew();    // array to store parameters
+            Code.malloc(areg, Integer.toString(e.list.size() * 4));
+
+            int i = 0;
+            for (int reg : e.list) {
+                Code.store(areg, i, reg);
+                i += 4;
+            }
+
+            Code.call(rreg, "TEMP " + freg, areg);
+        }
 
         return new JVar(n, m.Ret()).bind(rreg);
     }
@@ -354,7 +367,6 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     }
 
     public JVar visit(AllocationExpression n, Scope scope) {
-        // TODO
         JClass c = (JClass) MJava.getType(n.f1);
         int sreg = Reg.getnew(); // size reg
         int preg = Reg.getnew(); // class pointer reg
