@@ -28,7 +28,7 @@ public class JClass extends JType {
 		list.add(MJava.ArrayString());
 
 		JMethod m = new JMethod(new Identifier(n.f6), this, MJava.Undefined(), list, null, n.f14, n.f15, null);
-		m.setStringArgs(n.f11);
+		m.setMainArgs(n.f11);
 
 		add_method(m);
 	}
@@ -68,7 +68,7 @@ public class JClass extends JType {
 				return new JVar(id, p.vars.get(sid))
 				.assign()
 				.setVola(true)
-				.setBias(p.vbiases.get(sid));
+				.setBias(p.vbiases.get(sid) + 4);	// add space of VPTR !!!
 			}
 
 			p = p.father;

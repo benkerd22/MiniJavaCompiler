@@ -7,10 +7,6 @@ import minijava.symbol.*;
 import tools.*;
 
 public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
-	public ScopeBuilder() {
-		Scope.init();
-	}
-
 	public JVar visit(VarDeclaration n, Scope scope) {
 		scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
 
@@ -25,7 +21,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 	}
 
 	public JVar visit(Block n, Scope scope) {
-		Scope new_scope = new Scope(scope, n);
+		Scope new_scope = new Scope(scope);
 		n.f1.accept(this, new_scope);
 
 		return null;

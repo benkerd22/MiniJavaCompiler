@@ -13,9 +13,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			TypeCheck.check("samples/Factorial.java");
+			TypeCheck.check("samples/BubbleSort.java");
 
-			ToPiglet.compile("Factorial.pg");
+			ToPiglet.compile("out.pg");
 		} catch (Exception e) {
 			System.out.println("Oops");
 			e.printStackTrace();

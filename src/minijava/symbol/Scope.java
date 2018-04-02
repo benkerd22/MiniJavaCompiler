@@ -9,18 +9,14 @@ public class Scope {
 	private Scope father;
 	private JClass owner;
 
-	private static HashMap<Block, Scope> scopes = new HashMap<Block, Scope>();
-
 	public Scope(JClass _owner) {	// for scope in func
 		father = null;
 		owner = _owner;
 	}
 
-	public Scope(Scope _father, Block n) {	// for scope in a block
+	public Scope(Scope _father) {	// for scope in a block
 		father = _father;
 		owner = father.owner;
-
-		scopes.put(n, this);
 	}
 
 	public JClass Owner() {
@@ -64,13 +60,5 @@ public class Scope {
 		}
 
 		vars.put(sid, new JVar(id, t));
-	}
-
-	public static void init() {
-		scopes.clear();
-	}
-
-	public static Scope getScope(Block n) {
-		return scopes.get(n);
 	}
 }

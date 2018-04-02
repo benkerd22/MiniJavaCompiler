@@ -37,12 +37,15 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     }
 
     public JVar visit(VarDeclaration n, Scope scope) {
+        scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
         scope.getVar(n.f1).bind(Reg.getnew());
 
         return null;
     }
 
     public JVar visit(FormalParameter n, Scope scope) {
+        scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
+
         // the parameters of a func always bind from 1,2..
         // remember that TEMP 0 is for "this"
         scope.getVar(n.f1).bind(Reg.getnew());
@@ -51,8 +54,8 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     }
 
     public JVar visit(Block n, Scope scope) {
-        Scope child_scope = Scope.getScope(n);
-        n.f1.accept(this, child_scope);
+        Scope new_scope = new Scope(scope);
+        n.f1.accept(this, new_scope);
 
         return null;
     }
@@ -89,6 +92,15 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         int lreg = Reg.getnew(); // length
         int ereg = Reg.getnew();
 
+        if (a.isVola()) {
+            // we always set the "." bias to TEMP 0; cas' only "this." exists here
+            a.setBase(0);
+
+            int treg = Reg.getnew();
+            Code.load(treg, a.baseReg(), a.Bias());
+            a.bind(treg);
+        }
+            
         Code.minus(lpreg, a.Reg(), "4");
         Code.load(lreg, lpreg, 0);
 

@@ -9,6 +9,7 @@ import java.util.*;
 public class JMethod {
 	class Body {
 		NodeOptional para;
+		Identifier args;	// special for main route
 		NodeListOptional var, st;
 		Expression ret;
 	}
@@ -17,15 +18,16 @@ public class JMethod {
 
 	private Body body;
 	private Identifier name;
-	private Scope scope;
+	//private Scope scope;
 	private JType ret;
 	private ArrayList<JType> paras;
-	private int index;	// index == 0 indicates main entry
+	private int index;	// index == 0 indicates main route
+	private JClass owner;
 
-	JMethod(Identifier _name, JClass owner, JType _ret, ArrayList<JType> _para_list, NodeOptional b_para,
+	JMethod(Identifier _name, JClass _owner, JType _ret, ArrayList<JType> _para_list, NodeOptional b_para,
 			NodeListOptional b_var, NodeListOptional b_st, Expression b_ret) {
 		name = _name;
-		scope = new Scope(owner);
+		owner = _owner;
 		ret = _ret;
 		paras = _para_list;
 		body = new Body();
@@ -38,33 +40,39 @@ public class JMethod {
 		count++;
 	}
 
-	public void setStringArgs(Identifier args) {
-		scope.declare(MJava.ArrayString(), args);
-		scope.getVar(args).assign();
+	public void setMainArgs(Identifier args) {
+		body.args = args;
 	}
 
-	private void buildScope_asMain() {
-		ScopeBuilder b = new ScopeBuilder();
-		body.var.accept(b, scope);
-		body.st.accept(b, scope);
+	private Scope newScope() {
+		Scope scope = new Scope(owner);
+		if (index == 0) {
+			scope.declare(MJava.ArrayString(), body.args);
+			scope.getVar(body.args).assign();
+		}
+
+		return scope;
 	}
 
 	public void buildScope() {
-		if (index == 0) {
-			buildScope_asMain();
-			return;
-		}
-
 		ScopeBuilder b = new ScopeBuilder();
-		body.para.accept(b, scope);
-		body.var.accept(b, scope);
-		body.st.accept(b, scope);
-		JVar user_ret = body.ret.accept(b, scope);
-		ret.Assignable(user_ret.Type(), true, body.ret);
+		Scope scope = newScope();
+		
+		if (index != 0) {
+			body.para.accept(b, scope);
+			body.var.accept(b, scope);
+			body.st.accept(b, scope);
+			JVar user_ret = body.ret.accept(b, scope);
+			ret.Assignable(user_ret.Type(), true, body.ret);
+		} else {
+			body.var.accept(b, scope);
+			body.st.accept(b, scope);
+		}
 	}
 
 	public void buildCode_asMain() {
 		CodeGenerator g = new CodeGenerator();
+		Scope scope = newScope();
 
 		body.var.accept(g, scope);
 		Code.emit("MAIN\n", "");
@@ -79,6 +87,7 @@ public class JMethod {
 		}
 
 		CodeGenerator g = new CodeGenerator();
+		Scope scope = newScope();
 
 		body.para.accept(g, scope);
 		body.var.accept(g, scope);
