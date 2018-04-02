@@ -103,7 +103,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		MJava.Boolean().Assignable(a.Type(), true, n);
 		MJava.Boolean().Assignable(b.Type(), true, n);
 
-		int val = 0;
+		int val = JBoolean.Unknown();
 		if (a.Val() == JBoolean.False()) {
 			ErrorHandler.warn("Dead code", n.f2);
 			val = JBoolean.False();

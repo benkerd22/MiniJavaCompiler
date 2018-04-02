@@ -13,10 +13,14 @@ public class JBoolean extends JType {
 	}
 
 	public static int True() {
-		return 1;
+		return 2;
 	}
 
 	public static int False() {
+		return 1;
+	}
+
+	public static int Unknown() {
 		return 0;
 	}
 
