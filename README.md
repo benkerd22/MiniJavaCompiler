@@ -23,3 +23,5 @@ If typecheck fails, the program will report the errors and terminate. Otherwise 
 ### Judge
 
 To check the correctness, just click and run the `judge/judge.bat` in Windows. It will go through every `.java` file in the `sample` directory, and check if the sPiglet source file has the same behaviour(output) as the origin Mini-Java source file.
+
+It requires the Piglet interpreter [`judge/pgi.jar`](http://compilers.cs.ucla.edu/cs132/software/pgi.jar).
