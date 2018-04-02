@@ -13,12 +13,14 @@ public class JMethod {
 		Expression ret;
 	}
 
+	private static int count = 0;
+
 	private Body body;
 	private Identifier name;
 	private Scope scope;
 	private JType ret;
 	private ArrayList<JType> paras;
-	private boolean isMain = false;
+	private int index;	// index == 0 indicates main entry
 
 	JMethod(Identifier _name, JClass owner, JType _ret, ArrayList<JType> _para_list, NodeOptional b_para,
 			NodeListOptional b_var, NodeListOptional b_st, Expression b_ret) {
@@ -31,6 +33,14 @@ public class JMethod {
 		body.var = b_var;
 		body.st = b_st;
 		body.ret = b_ret;
+
+		index = count;
+		count++;
+	}
+
+	public void setStringArgs(Identifier args) {
+		scope.declare(MJava.ArrayString(), args);
+		scope.getVar(args).assign();
 	}
 
 	private void buildScope_asMain() {
@@ -40,7 +50,7 @@ public class JMethod {
 	}
 
 	public void buildScope() {
-		if (isMain) {
+		if (index == 0) {
 			buildScope_asMain();
 			return;
 		}
@@ -62,8 +72,9 @@ public class JMethod {
 		Code.emit("END\n\n", "");
 	}
 
-	public void buildCode(int index) {
-		if (isMain) {
+	public void buildCode() {
+		if (index == 0) {
+			Code.emit("f0_" + Name() + " [0]\nBEGIN\n\tERROR\nRETURN\n\t0\nEND\n\n", "");
 			return;
 		}
 
@@ -71,12 +82,17 @@ public class JMethod {
 
 		body.para.accept(g, scope);
 		body.var.accept(g, scope);
-		Code.emit("f" + index + "_" + Name() + " [" + paras.size() + "]\nBEGIN\n", "");
+		// remember that paras includes "this"
+		Code.emit("f" + index + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
 
 		body.st.accept(g, scope);
 		JVar ret = body.ret.accept(g, scope);
 
 		Code.emit("RETURN\n\tTEMP " + ret.Reg() + "\nEND\n\n", "");
+	}
+
+	public int Index() {
+		return index;
 	}
 
 	public Identifier Node() {
@@ -106,11 +122,5 @@ public class JMethod {
 		}
 
 		return true;
-	}
-
-	public void SetAsMainRoute(Identifier args) {
-		scope.declare(MJava.ArrayString(), args);
-		scope.getVar(args).assign();
-		isMain = true;
 	}
 }

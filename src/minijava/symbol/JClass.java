@@ -1,9 +1,9 @@
 package minijava.symbol;
 
-import java.security.Identity;
 import java.util.*;
 import minijava.syntaxtree.*;
 import minijava.visitor.*;
+import minijava.minijava2piglet.*;
 import tools.*;
 
 public class JClass extends JType {
@@ -13,8 +13,9 @@ public class JClass extends JType {
 
 	private JClass father = null;
 	private HashMap<String, JMethod> methods = new HashMap<String, JMethod>();
+	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>();	// method biases in vTable
 	private HashMap<String, JType> vars = new HashMap<String, JType>();
-	private HashMap<String, Integer> biases = new HashMap<String, Integer>();
+	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>();	// var biases in an instance
 	private int size = 0;
 
 	public JClass(MainClass n) {
@@ -27,7 +28,7 @@ public class JClass extends JType {
 		list.add(MJava.ArrayString());
 
 		JMethod m = new JMethod(new Identifier(n.f6), this, MJava.Undefined(), list, null, n.f14, n.f15, null);
-		m.SetAsMainRoute(n.f11);
+		m.setStringArgs(n.f11);
 
 		add_method(m);
 	}
@@ -67,7 +68,7 @@ public class JClass extends JType {
 				return new JVar(id, p.vars.get(sid))
 				.assign()
 				.setVola(true)
-				.setBias(p.biases.get(sid));
+				.setBias(p.vbiases.get(sid));
 			}
 
 			p = p.father;
@@ -142,20 +143,6 @@ public class JClass extends JType {
 		v_node.accept(new VarListHelper(), this);
 	}
 
-	private void release_biases() {
-		JClass p = this.father;
-		int base = 0;
-		while (p != null) {
-			base += p.size;
-			p = p.father;
-		}
-
-		for (Map.Entry<String, JType> e : vars.entrySet()) {
-			biases.put(e.getKey(), base);
-			base += e.getValue().Size();
-		}
-	}
-
 	private void strict_var_method() {
 		// method should have a different ID from variable in the same class
 		// However, this is allowed in Java
@@ -174,7 +161,6 @@ public class JClass extends JType {
 		release_father();
 		release_methods();
 		release_vars();
-		release_biases();
 
 		strict_var_method();
 	}
@@ -182,13 +168,14 @@ public class JClass extends JType {
 	public void checkMethods() {
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
 			JMethod m = e.getValue();
+			String mid = m.Name();
 
 			JClass p = this.father;
 			while (p != null) {
-				if (p.methods.containsKey(m.Name())) {
-					JMethod t = p.methods.get(m.Name());
+				if (p.methods.containsKey(mid)) {
+					JMethod t = p.methods.get(mid);
 					if (!t.Same(m)) {
-						ErrorHandler.send("Duplicate method " + m.Name() + " in Class " + Name()
+						ErrorHandler.send("Duplicate method " + mid + " in Class " + Name()
 								+ ": not allow overriding father's method", m.Node());
 						break;
 					}
@@ -199,6 +186,20 @@ public class JClass extends JType {
 		}
 	}
 
+	public void buildvBiases() {
+		JClass p = this.father;
+		int base = 0;
+		while (p != null) {
+			base += p.size;
+			p = p.father;
+		}
+
+		for (Map.Entry<String, JType> e : vars.entrySet()) {
+			vbiases.put(e.getKey(), base);
+			base += e.getValue().Size();
+		}
+	}
+
 	public void buildScope() {
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
 			JMethod m = e.getValue();
@@ -206,18 +207,40 @@ public class JClass extends JType {
 		}
 	}
 
-	public int buildCode(int index) {
+	public void buildmBiases() {
+		int i = 0;
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-			JMethod m = e.getValue();
-			m.buildCode(index);
-			index++;
+			mbiases.put(e.getKey(), i);
+			i += 4;
 		}
-
-		return index;
 	}
 
-	public Set<Map.Entry<String, JType>> var_entry() {
-		return vars.entrySet();
+	public int querymBiases(Identifier n) {
+		return mbiases.get(n.f0.toString());
+	}
+
+	public void buildClassCode() {
+		Code.emit("new_" + Name() + " [0]\nBEGIN\n", "");
+
+		int max = Collections.max(mbiases.values()) + 4;
+		Code.malloc(0, Integer.toString(max));
+
+		int i = 0;
+		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
+			JMethod m = e.getValue();
+			Code.mov(1, "f" + m.Index() + "_" + m.Name());
+			Code.store(0, i, 1);
+			i += 4;
+		}
+
+		Code.emit("RETURN\n\tTEMP 0\nEND\n\n", "");
+	}
+
+	public void buildMethodCode() {
+		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
+			JMethod m = e.getValue();
+			m.buildCode();
+		}
 	}
 
 	public void info() {

@@ -95,10 +95,7 @@ public abstract class MJava {
 
 	public static void buildClass() {
 		root.accept(new ClassTreeBuilder(filename));
-		release();
-	}
 
-	private static void release() {
 		for (Map.Entry<String, JClass> e : classes.entrySet()) {
 			JClass c = e.getValue();
 			c.release();
@@ -119,6 +116,7 @@ public abstract class MJava {
 
 		for (Map.Entry<String, JClass> e : classes.entrySet()) {
 			JClass c = e.getValue();
+			c.buildvBiases();
 			c.checkMethods();
 		}
 	}
@@ -138,15 +136,25 @@ public abstract class MJava {
 	}
 
 	public static void buildCode() {
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
+			c.buildmBiases();
+		}
+
 		JMethod m = main_class.queryMethod(new Identifier(new NodeToken("main")));
 		m.buildCode_asMain();
 
-		Code.clearFunc();
+		Code.callocFunc();
+
+		for (Map.Entry<String, JClass> e : classes.entrySet()) {
+			JClass c = e.getValue();
+			c.buildClassCode();
+		}
 
 		int index = 0;
 		for (Map.Entry<String, JClass> e : classes.entrySet()) {
 			JClass c = e.getValue();
-			index = c.buildCode(index);
+			c.buildMethodCode();
 		}
 	}
 }

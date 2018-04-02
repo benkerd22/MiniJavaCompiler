@@ -1,6 +1,7 @@
 package minijava.minijava2piglet;
 
 import java.io.*;
+import java.util.*;
 
 public class Code {
     private static PrintWriter out;
@@ -87,58 +88,33 @@ public class Code {
     }
 
     public static void call(int rreg, String exp, Integer... pregs) {
-        String args = "";
+        String args = "(";
         for (int preg : pregs) {
-            if (args == "")
-                args += "( TEMP " + preg;
-            else
-                args += ", TEMP " + preg;
+            args += " TEMP " + preg;
         }
-        if (args == "")
-            args = "()";
-        else
-            args += " )";
+        args += " )";
 
         mov(rreg, "CALL " + exp + args);
     }
 
-    public static void clearFunc() {
+    public static void callocFunc() {
         String l1 = Label.getnew();
         String func = 
-        "calloc [2]\n"+
-        "BEGIN\n"+
-        "	MOVE TEMP 2 0\n"+
-        "	MOVE TEMP 3 0\n"+
-        "	MOVE TEMP 4 TEMP 0\n"+
+        "calloc [2]\n" +
+        "BEGIN\n" +
+        "\tMOVE TEMP 2 0\n" +
+        "\tMOVE TEMP 3 0\n" +
+        "\tMOVE TEMP 4 TEMP 0\n" +
         l1 + "\tNOOP\n" +
-        "	HSTORE TEMP 4 0 TEMP 2\n"+
-        "	MOVE TEMP 4 PLUS TEMP 4 4\n"+
-        "	MOVE TEMP 5 LT TEMP 4 TEMP 1\n"+
-        "	CJUMP TEMP 5 " + l1 + "\n"+
-        "RETURN\n"+
-        "	0\n"+
+        "\tHSTORE TEMP 4 0 TEMP 2\n" +
+        "\tMOVE TEMP 4 PLUS TEMP 4 4\n" +
+        "\tMOVE TEMP 5 LT TEMP 4 TEMP 1\n" +
+        "\tMOVE TEMP 5 LT TEMP 5 1\n" +
+        "\tCJUMP TEMP 5 " + l1 + "\n" +
+        "RETURN\n" +
+        "\t0\n" +
         "END\n\n";
 
         emit(func, "");
-    }
-
-    public static void buildClassFunc(String name, String... methods) {   // func code of building a class vtable, we could get rid of it if we have global vars
-        String func = 
-        "build " + name + " [0]\n"+
-        "BEGIN\n"+
-        "	MOVE TEMP 2 0\n"+
-        "	MOVE TEMP 3 0\n"+
-        "	MOVE TEMP 4 TEMP 0\n"+
-        "   HSTORE TEMP 4 0 TEMP 2\n"+
-        "	MOVE TEMP 4 PLUS TEMP 4 4\n"+
-        "	MOVE TEMP 5 LT TEMP 4 TEMP 1\n"+
-        "	CJUMP TEMP 5\n"+
-        "RETURN\n"+
-        "	0\n"+
-        "END\n";
-
-        //TODO
-
-        emit(func);
     }
 }

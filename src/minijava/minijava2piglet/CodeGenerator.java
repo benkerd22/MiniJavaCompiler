@@ -32,6 +32,10 @@ class Reg {
 }
 
 public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
+    public CodeGenerator() {
+        Reg.init();
+    }
+
     public JVar visit(VarDeclaration n, Scope scope) {
         scope.getVar(n.f1).bind(Reg.getnew());
 
@@ -252,17 +256,25 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         }
 
         JVar a = n.f0.accept(this, scope);
-        // query freg
+
         JMethod m = ((JClass) a.Type()).queryMethod(n.f2);
 
         Entry e = new Entry();
         e.cg = this;
         e.scope = scope;
         e.list = new ArrayList<Integer>();
+        e.list.add(a.Reg());  // put this in TEMP 0
+
         n.f4.accept(new ExpressionListHelper(), e);
 
+        int preg = Reg.getnew();   // VPTR
+        int mb = ((JClass) a.Type()).querymBiases(n.f2);    // VPTR bias
+        int freg = Reg.getnew();    // func address
         int rreg = Reg.getnew();
-        Code.call(rreg, "TODO", e.list.toArray(new Integer[e.list.size()]));
+
+        Code.load(preg, a.Reg(), 0);
+        Code.load(freg, preg, mb);
+        Code.call(rreg, "TEMP " + freg, e.list.toArray(new Integer[e.list.size()]));
 
         return new JVar(n, m.Ret()).bind(rreg);
     }
@@ -338,7 +350,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         Code.mov(sreg, Integer.toString(c.instanceSize() + 4)); // 4 bytes for VPTR
         Code.malloc(preg, "TEMP " + sreg);
-        Code.call(Reg.getnew(), "clear", preg, sreg); //calloc
+        Code.call(Reg.getnew(), "calloc", preg, sreg); //calloc
         Code.call(vreg, "new_" + c.Name()); // get VPTR
         Code.store(preg, 0, vreg); // store VPTR
 
