@@ -63,11 +63,11 @@ public class Code {
         mov(dreg, "TIMES TEMP " + sreg + " " + exp);
     }
 
-    public static void load(int dreg, int breg, int bias) {   // dst reg, base reg, bias
+    public static void load(int dreg, int breg, int bias) { // dst reg, base reg, bias
         emitln("HLOAD TEMP " + dreg + " TEMP " + breg + " " + bias);
     }
 
-    public static void store(int breg, int bias, int sreg) {  // base reg, bias, src reg
+    public static void store(int breg, int bias, int sreg) { // base reg, bias, src reg
         emitln("HSTORE TEMP " + breg + " " + bias + " TEMP " + sreg);
     }
 
@@ -97,23 +97,21 @@ public class Code {
     }
 
     public static void callocFunc() {
-        String l1 = Label.getnew();
-        String func = 
-        "calloc [2]\n" +
-        "BEGIN\n" +
-        "\tMOVE TEMP 2 0\n" +
-        "\tMOVE TEMP 3 0\n" +
-        "\tMOVE TEMP 4 TEMP 0\n" +
-        l1 + "\tNOOP\n" +
-        "\tHSTORE TEMP 4 0 TEMP 2\n" +
-        "\tMOVE TEMP 4 PLUS TEMP 4 4\n" +
-        "\tMOVE TEMP 5 LT TEMP 4 TEMP 1\n" +
-        "\tMOVE TEMP 5 LT TEMP 5 1\n" +
-        "\tCJUMP TEMP 5 " + l1 + "\n" +
-        "RETURN\n" +
-        "\t0\n" +
-        "END\n\n";
+        String loop = Label.getnew();
 
-        emit(func, "");
+        emit("calloc [2]\nBEGIN\n", "");
+
+        mov(2, "0");
+        mov(3, "0");
+        mov(4, 0);
+
+        label(loop);
+        store(4, 0, 2);
+        plus(4, 4, "4");
+        lt(5, 4, "TEMP 1");
+        lt(5, 5, "1");
+        jump(loop, 5);
+
+        emit("RETURN\n\t0\nEND\n\n", "");
     }
 }
