@@ -13,10 +13,13 @@ public class JClass extends JType {
 
 	private JClass father = null;
 	private HashMap<String, JMethod> methods = new HashMap<String, JMethod>();
-	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>();	// method biases in vTable
+	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>(); // method biases in vTable
+	private HashMap<String, Integer> mstatus = new HashMap<String, Integer>(); // 0: free, 1: covered by child, 2: covers father's, 3: both 1 & 2
+	private HashSet<Integer> reserve = new HashSet<Integer>();
+	private boolean isFinishmBiases = false; // topo sort
 	private HashMap<String, JType> vars = new HashMap<String, JType>();
-	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>();	// var biases in an instance
-	private int size = 0, heritage = 0;	// size count of vars && the vars that extends from fathers
+	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>(); // var biases in an instance
+	private int size = 0, heritage = 0; // size count of vars && the vars that extends from fathers
 
 	public JClass(MainClass n) {
 		name = n.f1;
@@ -65,10 +68,7 @@ public class JClass extends JType {
 		JClass p = this;
 		while (p != null) {
 			if (p.vars.containsKey(sid)) {
-				return new JVar(id, p.vars.get(sid))
-				.assign()
-				.setVola(true)
-				.setBias(p.vbiases.get(sid) + 4);	// add space of VPTR !!!
+				return new JVar(id, p.vars.get(sid)).assign().setVola(true).setBias(p.vbiases.get(sid) + 4); // add space of VPTR !!!
 			}
 
 			p = p.father;
@@ -90,6 +90,10 @@ public class JClass extends JType {
 		}
 
 		return null;
+	}
+
+	public int queryMethodStatus(Identifier id) {
+		return mstatus.get(id.f0.toString());
 	}
 
 	private void release_father() {
@@ -165,6 +169,13 @@ public class JClass extends JType {
 		strict_var_method();
 	}
 
+	private void set_mstatus(String mid, int i) {
+		if (!mstatus.containsKey(mid))
+			mstatus.put(mid, 0);
+
+		mstatus.put(mid, mstatus.get(mid) | i);
+	}
+
 	public void checkMethods() {
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
 			JMethod m = e.getValue();
@@ -179,10 +190,16 @@ public class JClass extends JType {
 								+ ": not allow overriding father's method", m.Node());
 						break;
 					}
+
+					// this.method ==> p.method
+					set_mstatus(mid, 2);
+					p.set_mstatus(mid, 1);
 				}
 
 				p = p.father;
 			}
+
+			set_mstatus(mid, 0);
 		}
 	}
 
@@ -209,11 +226,60 @@ public class JClass extends JType {
 	}
 
 	public void buildmBiases() {
-		int i = 0;
-		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-			mbiases.put(e.getKey(), i);
-			i += 4;
+		if (isFinishmBiases)
+			return;
+
+		if (father != null) {
+			if (!father.isFinishmBiases)
+				father.buildmBiases();
 		}
+
+		if (father != null) {
+			reserve.addAll(father.reserve);
+		}
+
+		HashSet<Integer> used = new HashSet<Integer>();
+		for (Map.Entry<String, Integer> e : mstatus.entrySet()) {
+			String mid = e.getKey();
+
+			if (e.getValue() == 2 || e.getValue() == 3) {
+				JClass p = this.father;
+				while (p != null) {
+					if (p.methods.containsKey(mid)) {
+						int inherit = p.mbiases.get(mid);
+
+						mbiases.put(mid, inherit);
+						used.add(inherit);
+					}
+
+					p = p.father;
+				}
+			}
+		}
+
+		int assign = 0;
+
+		for (Map.Entry<String, Integer> e : mstatus.entrySet()) {
+			String mid = e.getKey();
+
+			if (e.getValue() == 1) {
+				while (used.contains(assign) || reserve.contains(assign))
+					assign++;
+				
+				mbiases.put(mid, assign * 4);
+				assign++;
+			}
+		}
+
+		for (Map.Entry<String, Integer> e : mstatus.entrySet()) {
+			String mid = e.getKey();
+
+			if (e.getValue() == 1 || e.getValue() == 3) {
+				reserve.add(mbiases.get(mid));
+			}
+		}
+
+		isFinishmBiases = true;
 	}
 
 	public int querymBiases(Identifier n) {
@@ -223,15 +289,17 @@ public class JClass extends JType {
 	public void buildClassCode() {
 		Code.emit("new_" + Name() + " [0]\nBEGIN\n", "");
 
-		int max = Collections.max(mbiases.values()) + 4;
-		Code.malloc(0, Integer.toString(max));
+		if (mbiases.size() > 0) {
+			int max = Collections.max(mbiases.values()) + 4;
+			Code.malloc(0, Integer.toString(max));
+		} else {
+			Code.mov(0, "0");
+		}
 
-		int i = 0;
-		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-			JMethod m = e.getValue();
+		for (Map.Entry<String, Integer> e : mbiases.entrySet()) {
+			JMethod m = methods.get(e.getKey());
 			Code.mov(1, "f" + m.Index() + "_" + Name() + "_" + m.Name());
-			Code.store(0, i, 1);
-			i += 4;
+			Code.store(0, e.getValue(), 1);
 		}
 
 		Code.emit("RETURN\n\tTEMP 0\nEND\n\n", "");
@@ -249,19 +317,13 @@ public class JClass extends JType {
 		if (methods.size() != 0) {
 			System.out.println("  methods:");
 			for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-				System.out.println("\t" + e.getValue().Name());
+				System.out.println("\t" + mbiases.get(e.getValue().Name()) + "\t" + e.getValue().Name());
 			}
 		}
 		if (vars.size() != 0) {
 			System.out.println("  vars:");
 			for (Map.Entry<String, JType> e : vars.entrySet()) {
-				System.out.println("\t" + e.getValue().Name() + " " + e.getKey());
-			}
-		}
-		if (mbiases.size() != 0) {
-			System.out.println("  mbiases:");
-			for (Map.Entry<String, Integer> e : mbiases.entrySet()) {
-				System.out.println("\t" + e.getKey() + " " + e.getValue());
+				System.out.println("\t" + mbiases.get(e.getKey()) + "\t" + e.getValue().Name() + " " + e.getKey());
 			}
 		}
 	}

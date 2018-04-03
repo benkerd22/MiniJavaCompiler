@@ -268,8 +268,25 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         }
 
         JVar a = n.f0.accept(this, scope);
+        JClass c = (JClass)a.Type();
 
-        JMethod m = ((JClass) a.Type()).queryMethod(n.f2);
+        JMethod m = c.queryMethod(n.f2);
+        int ms = m.Owner().queryMethodStatus(n.f2); // query status in the method's REAL owner
+        String funcExp;
+
+        if (ms == 0) {
+            // static call
+            funcExp = "f" + m.Index() + "_" + m.Owner().Name() + "_" + m.Name();
+        } else {
+            // polymorphism, query func in the vTable
+            int preg = Reg.getnew();   // VPTR
+            int freg = Reg.getnew();    // func address
+            int mb = m.Owner().querymBiases(n.f2);    // VPTR bias
+
+            Code.load(preg, a.Reg(), 0);
+            Code.load(freg, preg, mb);
+            funcExp = "TEMP " + freg;
+        }
 
         Entry e = new Entry();
         e.cg = this;
@@ -279,15 +296,10 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         n.f4.accept(new ExpressionListHelper(), e);
 
-        int preg = Reg.getnew();   // VPTR
-        int mb = ((JClass) a.Type()).querymBiases(n.f2);    // VPTR bias
-        int freg = Reg.getnew();    // func address
         int rreg = Reg.getnew();
 
-        Code.load(preg, a.Reg(), 0);
-        Code.load(freg, preg, mb);
         if (e.list.size() <= 20) {
-            Code.call(rreg, "TEMP " + freg, e.list.toArray(new Integer[e.list.size()]));
+            Code.call(rreg, funcExp, e.list.toArray(new Integer[e.list.size()]));
         } else {
             int areg = Reg.getnew();    // array to store parameters
             Code.malloc(areg, Integer.toString(e.list.size() * 4));
@@ -298,7 +310,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
                 i += 4;
             }
 
-            Code.call(rreg, "TEMP " + freg, areg);
+            Code.call(rreg, funcExp, areg);
         }
 
         return new JVar(n, m.Ret()).bind(rreg);
