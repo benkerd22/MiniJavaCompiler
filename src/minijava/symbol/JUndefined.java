@@ -4,6 +4,9 @@ import minijava.syntaxtree.*;
 import tools.*;
 
 public class JUndefined extends JType {
+
+	// ***** Attribute *****
+
 	public String Name() {
 		return "Undefined";
 	}

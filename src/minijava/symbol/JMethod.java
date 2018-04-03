@@ -7,6 +7,8 @@ import minijava.minijava2piglet.*;
 import java.util.*;
 
 public class JMethod {
+	private static int count = 0; // for index allocation
+
 	class Body {
 		NodeOptional para;
 		Identifier args; // special for main route
@@ -14,11 +16,8 @@ public class JMethod {
 		Expression ret;
 	}
 
-	private static int count = 0;
-
 	private Body body;
 	private Identifier name;
-	//private Scope scope;
 	private JType ret;
 	private ArrayList<JType> paras;
 	private int index; // index == 0 indicates main route
@@ -44,11 +43,13 @@ public class JMethod {
 		body.args = args;
 	}
 
+	// ***** Build (TypeCheck) *****
+
 	private Scope newScope() {
 		Scope scope = new Scope(owner);
 		if (index == 0) {
 			scope.declare(MJava.ArrayString(), body.args);
-			scope.getVar(body.args).assign();
+			scope.queryVar(body.args).assign();
 		}
 
 		return scope;
@@ -69,6 +70,8 @@ public class JMethod {
 			body.st.accept(b, scope);
 		}
 	}
+
+	// ***** Build (ToPiglet) *****
 
 	public void buildCode_asMain() {
 		CodeGenerator g = new CodeGenerator();
@@ -109,6 +112,8 @@ public class JMethod {
 		Code.emit("RETURN\n\tTEMP " + ret.Reg() + "\nEND\n\n", "");
 	}
 
+	// ***** Attribute *****
+
 	public int Index() {
 		return index;
 	}
@@ -125,24 +130,25 @@ public class JMethod {
 		return name.f0.toString();
 	}
 
-	public ArrayList<JType> List() {
-		return paras;
-	}
-
 	public JType Ret() {
 		return ret;
+	}
+
+	public int SamePara(ArrayList<JType> plist) {
+		if (plist.size() != paras.size())
+			return paras.size();
+
+		for (int i = 0; i < paras.size(); i++)
+			if (paras.get(i) != plist.get(i))
+				return i;
+
+		return -1;
 	}
 
 	public boolean Same(JMethod m) {
 		if (ret != m.ret)
 			return false;
-		if (paras.size() != m.paras.size())
-			return false;
-		for (int i = 0; i < paras.size(); i++) {
-			if (paras.get(i) != m.paras.get(i))
-				return false;
-		}
 
-		return true;
+		return SamePara(m.paras) == -1;
 	}
 }

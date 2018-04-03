@@ -5,9 +5,9 @@ import minijava.syntaxtree.*;
 import tools.*;
 
 public class Scope {
-	private HashMap<String, JVar> vars = new HashMap<String, JVar>();
 	private Scope father;
 	private JClass owner;
+	private HashMap<String, JVar> vars = new HashMap<String, JVar>();
 
 	public Scope(JClass _owner) { // for scope in func
 		father = null;
@@ -19,11 +19,23 @@ public class Scope {
 		owner = father.owner;
 	}
 
-	public JClass Owner() {
-		return owner;
+	// ***** Build *****
+
+	public void declare(JType t, Identifier id) {
+		String sid = id.f0.toString();
+
+		JVar v = queryVarOnlyFunc(id);
+		if (v != null) {
+			ErrorHandler.send("Dupilcate variable " + sid, id);
+			return;
+		}
+
+		vars.put(sid, new JVar(id, t));
 	}
 
-	private JVar getVarFunc(Identifier id) {
+	// ***** Query *****
+
+	private JVar queryVarOnlyFunc(Identifier id) {
 		String sid = id.f0.toString();
 
 		// look up id in Func body
@@ -39,9 +51,9 @@ public class Scope {
 		return null;
 	}
 
-	public JVar getVar(Identifier id) {
+	public JVar queryVar(Identifier id) {
 		// look up id in Func body
-		JVar t = getVarFunc(id);
+		JVar t = queryVarOnlyFunc(id);
 		if (t != null)
 			return t;
 
@@ -49,15 +61,9 @@ public class Scope {
 		return owner.queryVar(id);
 	}
 
-	public void declare(JType t, Identifier id) {
-		String sid = id.f0.toString();
+	// ***** Attribute *****
 
-		JVar v = getVarFunc(id);
-		if (v != null) {
-			ErrorHandler.send("Dupilcate variable " + sid, id);
-			return;
-		}
-
-		vars.put(sid, new JVar(id, t));
+	public JClass Owner() {
+		return owner;
 	}
 }

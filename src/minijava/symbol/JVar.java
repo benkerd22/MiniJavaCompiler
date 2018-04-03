@@ -7,7 +7,7 @@ public class JVar {
 	private Identifier id;
 	private Node where;
 	private JType type;
-	private int value = -1;	// for typecheck boolean literal only
+	private int value = 0;	// for typecheck boolean literal only
 	private int reg = -1;	// TEMP (?) for piglet
 	private boolean assigned = false;	// for typecheck if unused
 	private boolean vola = false;	// is the Var volatile? ex. this.a, b[0]
@@ -24,6 +24,43 @@ public class JVar {
 		type = _type;
 		where = _where;
 	}
+
+	// ***** Build (TypeCheck) *****
+
+	public JVar assign() {
+		assigned = true;
+		return this;
+	}
+
+	public JVar assign(int val) {
+		value = val;
+		assigned = true;
+		return this;
+	}
+
+	// ***** Build (ToPiglet) *****
+
+	public JVar bind(int regNum) {
+		reg = regNum;
+		return this;
+	}
+
+	public JVar setVola(boolean v) {
+		vola = v;
+		return this;
+	}
+
+	public JVar setBase(int regNum) {
+		base_reg = regNum;
+		return this;
+	}
+
+	public JVar setBias(int b) {
+		bias = b;
+		return this;
+	}
+
+	// ***** Attribute *****
 
 	public Identifier Node() {
 		return id;
@@ -45,8 +82,16 @@ public class JVar {
 		return value;
 	}
 
+	public boolean isAssigned() {
+		return assigned;
+	}
+
 	public int Reg() {
 		return reg;
+	}
+
+	public boolean isVola() {
+		return vola;
 	}
 
 	public int baseReg() {
@@ -55,44 +100,5 @@ public class JVar {
 
 	public int Bias() {
 		return bias;
-	}
-
-	public JVar setVola(boolean v) {
-		vola = v;
-		return this;
-	}
-
-	public boolean isVola() {
-		return vola;
-	}
-
-	public JVar assign() {
-		assigned = true;
-		return this;
-	}
-
-	public JVar assign(int val) {
-		value = val;
-		assigned = true;
-		return this;
-	}
-
-	public boolean isAssigned() {
-		return assigned;
-	}
-
-	public JVar bind(int regNum) {
-		reg = regNum;
-		return this;
-	}
-
-	public JVar setBase(int regNum) {
-		base_reg = regNum;
-		return this;
-	}
-
-	public JVar setBias(int b) {
-		bias = b;
-		return this;
 	}
 }

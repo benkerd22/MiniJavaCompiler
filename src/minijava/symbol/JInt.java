@@ -4,6 +4,9 @@ import minijava.syntaxtree.*;
 import tools.*;
 
 public class JInt extends JType {
+
+	// ***** Attribute *****
+
 	public String Name() {
 		return "Int";
 	}

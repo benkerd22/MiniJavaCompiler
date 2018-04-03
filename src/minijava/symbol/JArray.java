@@ -10,6 +10,8 @@ public class JArray extends JType {
 		type = _type;
 	}
 
+	// ***** Attribute *****
+
 	public String Name() {
 		return type.Name() + "[]";
 	}

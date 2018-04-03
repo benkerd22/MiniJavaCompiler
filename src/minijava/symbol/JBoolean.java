@@ -4,13 +4,8 @@ import minijava.syntaxtree.*;
 import tools.*;
 
 public class JBoolean extends JType {
-	public String Name() {
-		return "Boolean";
-	}
 
-	public int Size() {
-		return 4;
-	}
+	// ***** Build (TypeCheck) *****
 
 	public static int True() {
 		return 2;
@@ -22,6 +17,16 @@ public class JBoolean extends JType {
 
 	public static int Unknown() {
 		return 0;
+	}
+
+	// ***** Attribute *****
+
+	public String Name() {
+		return "Boolean";
+	}
+
+	public int Size() {
+		return 4;
 	}
 
 	public boolean Assignable(JType a, boolean report, Node n) {

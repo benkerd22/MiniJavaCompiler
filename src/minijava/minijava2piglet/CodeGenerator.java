@@ -37,18 +37,18 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     }
 
     public JVar visit(VarDeclaration n, Scope scope) {
-        scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
-        scope.getVar(n.f1).bind(Reg.getnew());
+        scope.declare(MJava.queryType(n.f0.f0.choice), n.f1);
+        scope.queryVar(n.f1).bind(Reg.getnew());
 
         return null;
     }
 
     public JVar visit(FormalParameter n, Scope scope) {
-        scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
+        scope.declare(MJava.queryType(n.f0.f0.choice), n.f1);
 
         // the parameters of a func always bind from 1,2..
         // remember that TEMP 0 is for "this"
-        scope.getVar(n.f1).bind(Reg.getnew());
+        scope.queryVar(n.f1).bind(Reg.getnew());
 
         return null;
     }
@@ -228,7 +228,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     public JVar visit(ArrayLookup n, Scope scope) {
         JVar a = n.f0.accept(this, scope);
         JType ele = ((JArray) a.Type()).ElementType(); // element type
-        
+
         JVar exp = n.f2.accept(this, scope);
 
         String ok = Label.getnew();
@@ -246,7 +246,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
         Code.error(); // out of index
-        
+
         Code.label(ok);
         Code.plus(preg, a.Reg(), "TEMP " + preg);
         Code.load(vreg, preg, 0);
@@ -366,9 +366,9 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
     public JVar visit(Identifier n, Scope scope) {
         // if we reach here, the <Identifier> n MUST be treated as a VARIABLE rather than class name, method name etc.
-        // only do the "get".
+        // only do the query work
         // cas' we still don't know whether this variable is to be stored or used
-        return scope.getVar(n);
+        return scope.queryVar(n);
     }
 
     public JVar visit(ThisExpression n, Scope scope) {
@@ -392,7 +392,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     }
 
     public JVar visit(AllocationExpression n, Scope scope) {
-        JClass c = (JClass) MJava.getType(n.f1);
+        JClass c = (JClass) MJava.queryType(n.f1);
         int sreg = Reg.getnew(); // size reg
         int preg = Reg.getnew(); // class pointer reg
         int vreg = Reg.getnew(); // VPTR

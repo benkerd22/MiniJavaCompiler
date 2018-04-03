@@ -8,14 +8,14 @@ import tools.*;
 
 public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 	public JVar visit(VarDeclaration n, Scope scope) {
-		scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
+		scope.declare(MJava.queryType(n.f0.f0.choice), n.f1);
 
 		return null;
 	}
 
 	public JVar visit(FormalParameter n, Scope scope) {
-		scope.declare(MJava.getType(n.f0.f0.choice), n.f1);
-		scope.getVar(n.f1).assign(); // assume arguments is initialized
+		scope.declare(MJava.queryType(n.f0.f0.choice), n.f1);
+		scope.queryVar(n.f1).assign(); // assume arguments is initialized
 
 		return null;
 	}
@@ -160,7 +160,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 		if (!(a.Type() instanceof JArray)) {
 			ErrorHandler.send("Type " + a.Type().Name() + " is not an array", n);
-			return new JVar(n, new JUndefined()).assign();
+			return new JVar(n, MJava.Undefined()).assign();
 		}
 
 		MJava.Int().Assignable(exp.Type(), true, n);
@@ -209,18 +209,8 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		e.list = new ArrayList<JType>();
 		n.f4.accept(new ExpressionListHelper(), e);
 
-		int check = 0;
-		if (e.list.size() == m.List().size()) {
-			for (int i = 0; i < m.List().size(); i++) {
-				if (e.list.get(i) != m.List().get(i)) {
-					check = i;
-					break;
-				}
-			}
-		} else
-			check = e.list.size() - 1;
-
-		if (check != 0) {
+		int check = m.SamePara(e.list);
+		if (check != -1) {
 			ErrorHandler.send("Method " + m.Name() + " in Class " + ((JClass) a.Type()).Name()
 					+ " is not applicateable for the paralist: " + check + "th", n);
 		}
@@ -257,7 +247,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 	}
 
 	public JVar visit(Identifier n, Scope scope) {
-		JVar a = scope.getVar(n);
+		JVar a = scope.queryVar(n);
 		if (a.Type() instanceof JUndefined) {
 			ErrorHandler.send("Undefined variable " + a.Id(), n);
 		}
@@ -278,7 +268,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 	}
 
 	public JVar visit(AllocationExpression n, Scope scope) {
-		return new JVar(n, MJava.getType(n.f1)).assign();
+		return new JVar(n, MJava.queryType(n.f1)).assign();
 	}
 
 	public JVar visit(NotExpression n, Scope scope) {

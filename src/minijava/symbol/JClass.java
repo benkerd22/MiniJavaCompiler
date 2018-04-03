@@ -7,19 +7,26 @@ import minijava.minijava2piglet.*;
 import tools.*;
 
 public class JClass extends JType {
+	// ***** attributes *****
 	private Identifier name;
 	private NodeListOptional v_node, m_node; // vars, methods
 	private Node f_node; //father
 
 	private JClass father = null;
+	private int size = 0, heritage = 0; // size count of vars && the vars that extends from fathers
+
+	// ***** methods *****
 	private HashMap<String, JMethod> methods = new HashMap<String, JMethod>();
 	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>(); // method biases in vTable
 	private HashMap<String, Integer> mstatus = new HashMap<String, Integer>(); // 0: free, 1: covered by child, 2: covers father's, 3: both 1 & 2
 	private HashSet<Integer> reserve = new HashSet<Integer>();
 	private boolean isFinishmBiases = false; // topo sort
+
+	// ***** vars *****
 	private HashMap<String, JType> vars = new HashMap<String, JType>();
 	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>(); // var biases in an instance
-	private int size = 0, heritage = 0; // size count of vars && the vars that extends from fathers
+
+	// **********
 
 	public JClass(MainClass n) {
 		name = n.f1;
@@ -62,39 +69,14 @@ public class JClass extends JType {
 		}
 	}
 
-	public JVar queryVar(Identifier id) {
-		String sid = id.f0.toString();
+	private void set_mstatus(String mid, int i) {
+		if (!mstatus.containsKey(mid))
+			mstatus.put(mid, 0);
 
-		JClass p = this;
-		while (p != null) {
-			if (p.vars.containsKey(sid)) {
-				return new JVar(id, p.vars.get(sid)).assign().setVola(true).setBias(p.vbiases.get(sid) + 4); // add space of VPTR !!!
-			}
-
-			p = p.father;
-		}
-
-		return new JVar(id, MJava.Undefined()).assign();
+		mstatus.put(mid, mstatus.get(mid) | i);
 	}
 
-	public JMethod queryMethod(Identifier id) {
-		String sid = id.f0.toString();
-
-		JClass p = this;
-		while (p != null) {
-			if (p.methods.containsKey(sid)) {
-				return p.methods.get(sid);
-			}
-
-			p = p.father;
-		}
-
-		return null;
-	}
-
-	public int queryMethodStatus(Identifier id) {
-		return mstatus.get(id.f0.toString());
-	}
+	// ***** Build (Typecheck) *****
 
 	private void release_father() {
 		if (f_node != null) {
@@ -153,13 +135,6 @@ public class JClass extends JType {
 		release_vars();
 	}
 
-	private void set_mstatus(String mid, int i) {
-		if (!mstatus.containsKey(mid))
-			mstatus.put(mid, 0);
-
-		mstatus.put(mid, mstatus.get(mid) | i);
-	}
-
 	public void checkMethods() {
 		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
 			JMethod m = e.getValue();
@@ -186,6 +161,8 @@ public class JClass extends JType {
 			set_mstatus(mid, 0);
 		}
 	}
+
+	// ***** Build (ToPiglet) *****
 
 	public void buildvBiases() {
 		heritage = 0;
@@ -266,10 +243,6 @@ public class JClass extends JType {
 		isFinishmBiases = true;
 	}
 
-	public int querymBiases(Identifier n) {
-		return mbiases.get(n.f0.toString());
-	}
-
 	public void buildClassCode() {
 		Code.emit("new_" + Name() + " [0]\nBEGIN\n", "");
 
@@ -295,6 +268,48 @@ public class JClass extends JType {
 			m.buildCode();
 		}
 	}
+
+	// ***** Query *****
+
+	public JVar queryVar(Identifier id) {
+		String sid = id.f0.toString();
+
+		JClass p = this;
+		while (p != null) {
+			if (p.vars.containsKey(sid)) {
+				return new JVar(id, p.vars.get(sid)).assign().setVola(true).setBias(p.vbiases.get(sid) + 4); // add space of VPTR !!!
+			}
+
+			p = p.father;
+		}
+
+		return new JVar(id, MJava.Undefined()).assign();
+	}
+
+	public JMethod queryMethod(Identifier id) {
+		String sid = id.f0.toString();
+
+		JClass p = this;
+		while (p != null) {
+			if (p.methods.containsKey(sid)) {
+				return p.methods.get(sid);
+			}
+
+			p = p.father;
+		}
+
+		return null;
+	}
+
+	public int queryMethodStatus(Identifier id) {
+		return mstatus.get(id.f0.toString());
+	}
+
+	public int querymBiases(Identifier n) {
+		return mbiases.get(n.f0.toString());
+	}
+
+	// ***** Attribute *****
 
 	public void info() {
 		System.out.println("Class " + Name());
