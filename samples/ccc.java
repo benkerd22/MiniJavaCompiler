@@ -4,16 +4,15 @@ class ccc {
         int b;
         int c;
         int d;
-        args[1] = 1;
-        c= 1;
-        d=100;
-        a = new int[ 1-100 ];
+        c = 1;
+        d = 100;
+        a = new int[100];
         b = a[100];
     }
 }
 
 class C extends A {
-    public int j(int a) {
+    public int j() {
         return 0;
     }
 
@@ -23,8 +22,6 @@ class C extends A {
         c = new C();
         i = 99999999;
 
-        while (true) {}
-
         p = new int[10];
         i = p[25];
         if (i < 10)
@@ -32,7 +29,7 @@ class C extends A {
         else
             p = new int[30];
         i = p[25];
-        return c.index(c.j(0), false && (c.kk()), p, new B());
+        return c.index(c.j(), false && (c.kk()), p, new B());
     }
 
     public boolean kk() {
@@ -45,7 +42,6 @@ class A {
     int i;
 
     public int index(int uu, boolean jj, int[] qq, B bb) {
-        int uu;
         return 0;
     }
 
@@ -63,7 +59,7 @@ class A {
         int a;
         b = new int[100];
         a = b[0];
-        
+
         return a;
     }
 
@@ -73,4 +69,12 @@ class A {
 }
 
 class B {
+}
+
+class A1 {
+    int i;
+}
+
+class A2 extends A1 {
+    boolean i;
 }
