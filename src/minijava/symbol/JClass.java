@@ -147,26 +147,10 @@ public class JClass extends JType {
 		v_node.accept(new VarListHelper(), this);
 	}
 
-	private void strict_var_method() {
-		// method should have a different ID from variable in the same class
-		// However, this is allowed in Java
-		// thus we throw an warning instead of error
-
-		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-			JMethod m = e.getValue();
-			if (vars.containsKey(m.Name())) {
-				ErrorHandler.warn("Method " + m.Name() + " has the same name as the member in Class " + Name(),
-						m.Node());
-			}
-		}
-	}
-
 	public void release() {
 		release_father();
 		release_methods();
 		release_vars();
-
-		strict_var_method();
 	}
 
 	private void set_mstatus(String mid, int i) {
