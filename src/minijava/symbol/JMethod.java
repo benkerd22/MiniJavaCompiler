@@ -117,6 +117,10 @@ public class JMethod {
 		return name;
 	}
 
+	public JClass Owner() {
+		return owner;
+	}
+
 	public String Name() {
 		return name.f0.toString();
 	}
