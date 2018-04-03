@@ -100,7 +100,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
             Code.load(treg, a.baseReg(), a.Bias());
             a.bind(treg);
         }
-            
+
         Code.minus(lpreg, a.Reg(), "4");
         Code.load(lreg, lpreg, 0);
 
@@ -109,7 +109,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
 
-        Code.error();   // out of index
+        Code.error(); // out of index
 
         Code.label(ok);
         Code.plus(preg, a.Reg(), "TEMP " + preg);
@@ -268,7 +268,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         }
 
         JVar a = n.f0.accept(this, scope);
-        JClass c = (JClass)a.Type();
+        JClass c = (JClass) a.Type();
 
         JMethod m = c.queryMethod(n.f2);
         int ms = m.Owner().queryMethodStatus(n.f2); // query status in the method's REAL owner
@@ -279,9 +279,9 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
             funcExp = "f" + m.Index() + "_" + m.Owner().Name() + "_" + m.Name();
         } else {
             // polymorphism, query func in the vTable
-            int preg = Reg.getnew();   // VPTR
-            int freg = Reg.getnew();    // func address
-            int mb = m.Owner().querymBiases(n.f2);    // VPTR bias
+            int preg = Reg.getnew(); // VPTR
+            int freg = Reg.getnew(); // func address
+            int mb = m.Owner().querymBiases(n.f2); // VPTR bias
 
             Code.load(preg, a.Reg(), 0);
             Code.load(freg, preg, mb);
@@ -292,7 +292,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         e.cg = this;
         e.scope = scope;
         e.list = new ArrayList<Integer>();
-        e.list.add(a.Reg());  // put "this" in TEMP 0
+        e.list.add(a.Reg()); // put "this" in TEMP 0
 
         n.f4.accept(new ExpressionListHelper(), e);
 
@@ -301,7 +301,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         if (e.list.size() <= 20) {
             Code.call(rreg, funcExp, e.list.toArray(new Integer[e.list.size()]));
         } else {
-            int areg = Reg.getnew();    // array to store parameters
+            int areg = Reg.getnew(); // array to store parameters
             Code.malloc(areg, Integer.toString(e.list.size() * 4));
 
             int i = 0;

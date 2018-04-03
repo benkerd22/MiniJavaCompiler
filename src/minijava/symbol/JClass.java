@@ -265,7 +265,7 @@ public class JClass extends JType {
 			if (e.getValue() == 1) {
 				while (used.contains(assign) || reserve.contains(assign))
 					assign++;
-				
+
 				mbiases.put(mid, assign * 4);
 				assign++;
 			}

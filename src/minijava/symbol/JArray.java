@@ -15,7 +15,7 @@ public class JArray extends JType {
 	}
 
 	public int Size() {
-		return 4;	// as a pointer ... maybe ...
+		return 4; // as a pointer ... maybe ...
 	}
 
 	public JType ElementType() {

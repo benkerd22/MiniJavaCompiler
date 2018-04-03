@@ -14,8 +14,8 @@ public abstract class MJava {
 			Undefined = new JUndefined();
 	private static JClass String = new JClass(new Identifier(new NodeToken("String")), null, null, null);
 	private static JType ArrayString = new JArray(String);
-	private static HashMap<String, JClass> classes = new HashMap<String, JClass>();	// user defined classes
-	private static HashMap<String, JClass> bin_classes = new HashMap<String, JClass>();	// bulit-in classes
+	private static HashMap<String, JClass> classes = new HashMap<String, JClass>(); // user defined classes
+	private static HashMap<String, JClass> bin_classes = new HashMap<String, JClass>(); // bulit-in classes
 
 	public static void init(Goal _root, String _filename) {
 		root = _root;
@@ -58,12 +58,12 @@ public abstract class MJava {
 		declareClass(type.Name(), type);
 	}
 
-	public static void declareClass(String name, JClass type) {	// We already have a JClass object, so we don't need a Identifier as an argument
+	public static void declareClass(String name, JClass type) { // We already have a JClass object, so we don't need a Identifier as an argument
 		if (classes.containsKey(name)) {
 			ErrorHandler.send("Class " + name + " is already defined", type.Node());
 		} else {
 			if (bin_classes.containsKey(name))
-				ErrorHandler.warn("Class " + name + " may conflict with a pre-defined class", type.Node());	// the warning is unnecessary.
+				ErrorHandler.warn("Class " + name + " may conflict with a pre-defined class", type.Node()); // the warning is unnecessary.
 
 			classes.put(name, type);
 		}

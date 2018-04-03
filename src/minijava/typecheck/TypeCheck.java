@@ -56,7 +56,7 @@ public abstract class TypeCheck {
 		File f = new File(src);
 
 		if (f.isDirectory()) {
-			return false;	// do not support dir
+			return false; // do not support dir
 			/*
 			File[] listOfFiles = f.listFiles();
 			for (File file : listOfFiles) {

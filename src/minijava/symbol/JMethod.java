@@ -9,7 +9,7 @@ import java.util.*;
 public class JMethod {
 	class Body {
 		NodeOptional para;
-		Identifier args;	// special for main route
+		Identifier args; // special for main route
 		NodeListOptional var, st;
 		Expression ret;
 	}
@@ -21,7 +21,7 @@ public class JMethod {
 	//private Scope scope;
 	private JType ret;
 	private ArrayList<JType> paras;
-	private int index;	// index == 0 indicates main route
+	private int index; // index == 0 indicates main route
 	private JClass owner;
 
 	JMethod(Identifier _name, JClass _owner, JType _ret, ArrayList<JType> _para_list, NodeOptional b_para,
@@ -57,7 +57,7 @@ public class JMethod {
 	public void buildScope() {
 		ScopeBuilder b = new ScopeBuilder();
 		Scope scope = newScope();
-		
+
 		if (index != 0) {
 			body.para.accept(b, scope);
 			body.var.accept(b, scope);

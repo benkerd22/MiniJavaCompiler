@@ -9,12 +9,12 @@ public class Scope {
 	private Scope father;
 	private JClass owner;
 
-	public Scope(JClass _owner) {	// for scope in func
+	public Scope(JClass _owner) { // for scope in func
 		father = null;
 		owner = _owner;
 	}
 
-	public Scope(Scope _father) {	// for scope in a block
+	public Scope(Scope _father) { // for scope in a block
 		father = _father;
 		owner = father.owner;
 	}

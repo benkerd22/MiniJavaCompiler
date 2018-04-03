@@ -3,7 +3,7 @@ package minijava.minijava2piglet;
 import minijava.symbol.*;
 
 public class ToPiglet {
-    private static String ext(String s) {  // change extension ".java" to ".spg"
+    private static String ext(String s) { // change extension ".java" to ".spg"
         return s.replace(".java", ".spg");
     }
 
@@ -15,5 +15,7 @@ public class ToPiglet {
         Code.finish();
 
         System.out.println("Done");
+
+        //MJava.show();
     }
 }
