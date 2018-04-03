@@ -82,15 +82,6 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     public JVar visit(ArrayAssignmentStatement n, Scope scope) {
         JVar a = n.f0.accept(this, scope);
         JType ele = ((JArray) a.Type()).ElementType(); // element type
-        JVar exp = n.f2.accept(this, scope);
-        JVar right = n.f5.accept(this, scope);
-
-        String ok = Label.getnew();
-
-        int preg = Reg.getnew(); // address pointer
-        int lpreg = Reg.getnew(); // address pointer (.length)
-        int lreg = Reg.getnew(); // length
-        int ereg = Reg.getnew();
 
         if (a.isVola()) {
             // we always set the "." bias to TEMP 0; cas' only "this." exists here
@@ -101,6 +92,15 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
             a.bind(treg);
         }
 
+        JVar exp = n.f2.accept(this, scope);
+        JVar right = n.f5.accept(this, scope);
+
+        String ok = Label.getnew();
+        int preg = Reg.getnew(); // address pointer
+        int lpreg = Reg.getnew(); // address pointer (.length)
+        int lreg = Reg.getnew(); // length
+        int ereg = Reg.getnew();
+
         Code.minus(lpreg, a.Reg(), "4");
         Code.load(lreg, lpreg, 0);
 
@@ -108,7 +108,6 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.lt(ereg, preg, "TEMP " + lreg);
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
-
         Code.error(); // out of index
 
         Code.label(ok);
@@ -229,12 +228,26 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     public JVar visit(ArrayLookup n, Scope scope) {
         JVar a = n.f0.accept(this, scope);
         JType ele = ((JArray) a.Type()).ElementType(); // element type
+        
         JVar exp = n.f2.accept(this, scope);
 
+        String ok = Label.getnew();
         int preg = Reg.getnew(); // address pointer
+        int lpreg = Reg.getnew(); // address pointer (.length)
+        int lreg = Reg.getnew(); // length
+        int ereg = Reg.getnew();
         int vreg = Reg.getnew(); // value
 
+        Code.minus(lpreg, a.Reg(), "4");
+        Code.load(lreg, lpreg, 0);
+
         Code.times(preg, exp.Reg(), Integer.toString(ele.Size()));
+        Code.lt(ereg, preg, "TEMP " + lreg);
+        Code.lt(ereg, ereg, "1");
+        Code.jump(ok, ereg);
+        Code.error(); // out of index
+        
+        Code.label(ok);
         Code.plus(preg, a.Reg(), "TEMP " + preg);
         Code.load(vreg, preg, 0);
 
