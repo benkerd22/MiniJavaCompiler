@@ -80,7 +80,7 @@ public class JClass extends JType {
 
 	private void release_father() {
 		if (f_node != null) {
-			JType _father = MJava.getType(f_node);
+			JType _father = MJava.queryType(f_node);
 			if (_father == MJava.Undefined()) {
 				ErrorHandler.send("Class " + Name() + " extends an undefined Class");
 			} else
@@ -91,8 +91,7 @@ public class JClass extends JType {
 	private void release_methods() {
 		class ParaListHelper extends GJVoidDepthFirst<ArrayList<JType>> {
 			public void visit(FormalParameter n, ArrayList<JType> list) {
-				JType type = MJava.getType(n.f0.f0.choice);
-				//String name = n.f1.f0.toString();
+				JType type = MJava.queryType(n.f0.f0.choice);
 
 				list.add(type);
 			}
@@ -104,7 +103,7 @@ public class JClass extends JType {
 
 				n.f4.accept(new ParaListHelper(), para_list);
 
-				JMethod m = new JMethod(n.f2, c, MJava.getType(n.f1.f0.choice), para_list, n.f4, n.f7, n.f8, n.f10);
+				JMethod m = new JMethod(n.f2, c, MJava.queryType(n.f1.f0.choice), para_list, n.f4, n.f7, n.f8, n.f10);
 
 				c.add_method(m);
 			}
@@ -119,7 +118,7 @@ public class JClass extends JType {
 	private void release_vars() {
 		class VarListHelper extends GJVoidDepthFirst<JClass> {
 			public void visit(VarDeclaration n, JClass c) {
-				c.add_var(n.f1, MJava.getType(n.f0.f0.choice));
+				c.add_var(n.f1, MJava.queryType(n.f0.f0.choice));
 			}
 		}
 
