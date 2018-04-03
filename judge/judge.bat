@@ -9,6 +9,7 @@ for %%G in (samples\*.java) do (
 
 for %%G in (samples\*.spg) do (
   echo ---- %%~nG ----
+  java -jar judge\spp.jar < %%~fG
   java -jar judge\pgi.jar < %%~fG > judge\tmp.txt
   javac -d judge\tmp %%~pG%%~nG.java
   java -cp judge\tmp %%~nG > judge\goal.txt
@@ -18,7 +19,7 @@ for %%G in (samples\*.spg) do (
 
 pause
 
-del judge\tmp.txt
-del judge\goal.txt
+del /Q judge\tmp.txt
+del /Q judge\goal.txt
 del /S /Q judge\tmp
-rmdir judge\tmp
+rmdir /Q judge\tmp
