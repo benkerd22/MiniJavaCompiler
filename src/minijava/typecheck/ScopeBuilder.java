@@ -209,8 +209,8 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		e.list = new ArrayList<JType>();
 		n.f4.accept(new ExpressionListHelper(), e);
 
-		int check = m.SamePara(e.list);
-		if (check != -1) {
+		int check = m.AssignablePara(e.list);
+		if (check != 0) {
 			ErrorHandler.send("Method " + m.Name() + " in Class " + ((JClass) a.Type()).Name()
 					+ " is not applicateable for the paralist: " + check + "th", n);
 		}

@@ -134,21 +134,32 @@ public class JMethod {
 		return ret;
 	}
 
+	public int AssignablePara(ArrayList<JType> plist) {
+		if (plist.size() != paras.size())
+			return paras.size() == 0 ? 1 : paras.size();
+
+		for (int i = 0; i < paras.size(); i++) 
+			if (!paras.get(i).Assignable(plist.get(i), false, null))
+				return i + 1;
+
+		return 0;
+	}
+
 	public int SamePara(ArrayList<JType> plist) {
 		if (plist.size() != paras.size())
-			return paras.size();
+		return paras.size() == 0 ? 1 : paras.size();
 
 		for (int i = 0; i < paras.size(); i++)
 			if (paras.get(i) != plist.get(i))
-				return i;
+				return i + 1;
 
-		return -1;
+		return 0;
 	}
 
 	public boolean Same(JMethod m) {
 		if (ret != m.ret)
 			return false;
 
-		return SamePara(m.paras) == -1;
+		return SamePara(m.paras) == 0;
 	}
 }
