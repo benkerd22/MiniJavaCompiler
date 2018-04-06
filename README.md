@@ -4,9 +4,9 @@ Features:
 - typecheck 
 - compile Mini-Java to sPiglet
 
-### Compile
+### Build
 
-To compile this project, use the following command at the root of this repository:
+To build this project, use the following command at the root of this repository:
 
     javac -d bin -sourcepath src -encoding UTF-8 src/Main.java
 
