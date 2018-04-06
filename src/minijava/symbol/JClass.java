@@ -50,6 +50,8 @@ public class JClass extends JType {
 		f_node = f;
 	}
 
+	// ***** Build (Typecheck) *****
+
 	private void add_method(JMethod m) {
 		if (methods.containsKey(m.Name())) { // Not allow Method Overidding
 			ErrorHandler.send("Dupilcate method " + m.Name() + " in Class " + Name(), m.Node());
@@ -68,15 +70,6 @@ public class JClass extends JType {
 			size += type.Size();
 		}
 	}
-
-	private void set_mstatus(String mid, int i) {
-		if (!mstatus.containsKey(mid))
-			mstatus.put(mid, 0);
-
-		mstatus.put(mid, mstatus.get(mid) | i);
-	}
-
-	// ***** Build (Typecheck) *****
 
 	private void release_father() {
 		if (f_node != null) {
@@ -161,6 +154,13 @@ public class JClass extends JType {
 		}
 	}
 
+	public void buildScope() {
+		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
+			JMethod m = e.getValue();
+			m.buildScope();
+		}
+	}
+
 	// ***** Build (ToPiglet) *****
 
 	public void buildvBiases() {
@@ -178,11 +178,11 @@ public class JClass extends JType {
 		}
 	}
 
-	public void buildScope() {
-		for (Map.Entry<String, JMethod> e : methods.entrySet()) {
-			JMethod m = e.getValue();
-			m.buildScope();
-		}
+	private void set_mstatus(String mid, int i) {
+		if (!mstatus.containsKey(mid))
+			mstatus.put(mid, 0);
+
+		mstatus.put(mid, mstatus.get(mid) | i);
 	}
 
 	public void buildmBiases() {
