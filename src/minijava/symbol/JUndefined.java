@@ -16,8 +16,8 @@ public class JUndefined extends JType {
 	}
 
 	public boolean Assignable(JType a, boolean report, Node n) {
-		if (report)
-			ErrorHandler.send("Use a Undefined variable as left value", n);
+		//if (report)
+		//	ErrorHandler.send("Use a Undefined variable as left value", n);
 		return false;
 	}
 }
