@@ -229,8 +229,8 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 
 	public JVar visit(IntegerLiteral n, Scope scope) {
 		try {
-			int val = Integer.parseInt(n.f0.toString());
-			return new JVar(n, MJava.Int()).assign(val);
+			Integer.parseInt(n.f0.toString());
+			return new JVar(n, MJava.Int()).assign();
 		} catch (NumberFormatException e) {
 			ErrorHandler.send("the literal " + n.f0.toString() + " of type int is out of range", n);
 			return new JVar(n, MJava.Int()).assign();
