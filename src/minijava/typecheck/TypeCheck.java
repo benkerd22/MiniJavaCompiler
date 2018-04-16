@@ -29,8 +29,8 @@ class MJP {
 
 public abstract class TypeCheck {
 	public static boolean check(final File src) {
+		MJP.accept(src);
 		try {
-			MJP.accept(src);
 			MJava.init(MiniJavaParser.Goal(), src.getName());
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
