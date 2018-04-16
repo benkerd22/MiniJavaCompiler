@@ -10,7 +10,7 @@ import tools.*;
 // 死代码消除（警告）
 // 同名的变量和方法（警告）
 
-class MJPHelper {
+class MJP {
 	private static boolean b = true; // the first time using MiniJavaParser?
 
 	public static void accept(final File f) {
@@ -30,7 +30,7 @@ class MJPHelper {
 public abstract class TypeCheck {
 	public static boolean check(final File src) {
 		try {
-			MJPHelper.accept(src);
+			MJP.accept(src);
 			MJava.init(MiniJavaParser.Goal(), src.getName());
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
