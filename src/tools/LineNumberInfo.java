@@ -106,7 +106,7 @@ public class LineNumberInfo {
     private static Object firstMatch_(Object o) {        
         if (o == null)
             return null;
-        Class c = o.getClass();
+        Class<?> c = o.getClass();
         if  (c.getName().endsWith("NodeToken"))
             return o;        
         try {
@@ -123,7 +123,7 @@ public class LineNumberInfo {
                     f = c.getField("node");
                 } else if ( (f == null) && (i == 0) ) {                        
                     // special cases: node sequence, etc.
-                    Enumeration e = (Enumeration) c.getMethod("elements").invoke(o);
+                    Enumeration<?> e = (Enumeration<?>) c.getMethod("elements").invoke(o);
                     while (e.hasMoreElements()) {
                         Object x = firstMatch(e.nextElement());
                         if (x != null)
