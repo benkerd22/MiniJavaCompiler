@@ -7,7 +7,7 @@ import tools.*;
 public class Scope {
 	private Scope father;
 	private JClass owner;
-	private HashMap<String, JVar> vars = new HashMap<String, JVar>();
+	private Map<String, JVar> vars = new HashMap<String, JVar>();
 
 	public Scope(JClass _owner) { // for scope in func
 		father = null;

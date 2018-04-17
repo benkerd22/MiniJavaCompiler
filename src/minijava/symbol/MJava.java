@@ -13,8 +13,8 @@ public abstract class MJava {
 
 	// ***** list of JClass *****
 	private static JClass main_class;
-	private static HashMap<String, JClass> classes = new HashMap<String, JClass>(); // user defined classes
-	private static HashMap<String, JClass> bin_classes = new HashMap<String, JClass>(); // bulit-in classes
+	private static Map<String, JClass> classes = new HashMap<String, JClass>(); // user defined classes
+	private static Map<String, JClass> bin_classes = new HashMap<String, JClass>(); // bulit-in classes
 
 	// ***** unique JType *****
 	private static JType Int = new JInt(), Boolean = new JBoolean(), ArrayInt = new JArray(Int), Undefined = new JUndefined();

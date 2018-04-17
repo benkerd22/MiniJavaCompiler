@@ -16,15 +16,15 @@ public class JClass extends JType {
 	private int size = 0, heritage = 0; // size count of vars && the vars that extends from fathers
 
 	// ***** methods *****
-	private HashMap<String, JMethod> methods = new HashMap<String, JMethod>();
-	private HashMap<String, Integer> mbiases = new HashMap<String, Integer>(); // method biases in vTable
-	private HashMap<String, Integer> mstatus = new HashMap<String, Integer>(); // 0: free, 1: covered by child, 2: covers father's, 3: both 1 & 2
-	private HashSet<Integer> reserve = new HashSet<Integer>();
+	private Map<String, JMethod> methods = new HashMap<String, JMethod>();
+	private Map<String, Integer> mbiases = new HashMap<String, Integer>(); // method biases in vTable
+	private Map<String, Integer> mstatus = new HashMap<String, Integer>(); // 0: free, 1: covered by child, 2: covers father's, 3: both 1 & 2
+	private Set<Integer> reserve = new HashSet<Integer>();
 	private boolean isFinishmBiases = false; // topo sort
 
 	// ***** vars *****
-	private HashMap<String, JType> vars = new HashMap<String, JType>();
-	private HashMap<String, Integer> vbiases = new HashMap<String, Integer>(); // var biases in an instance
+	private Map<String, JType> vars = new HashMap<String, JType>();
+	private Map<String, Integer> vbiases = new HashMap<String, Integer>(); // var biases in an instance
 
 	// **********
 

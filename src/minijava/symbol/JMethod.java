@@ -19,11 +19,11 @@ public class JMethod {
 	private Body body;
 	private Identifier name;
 	private JType ret;
-	private ArrayList<JType> paras;
+	private List<JType> paras;
 	private int index; // index == 0 indicates main route
 	private JClass owner;
 
-	JMethod(Identifier _name, JClass _owner, JType _ret, ArrayList<JType> _para_list, NodeOptional b_para,
+	JMethod(Identifier _name, JClass _owner, JType _ret, List<JType> _para_list, NodeOptional b_para,
 			NodeListOptional b_var, NodeListOptional b_st, Expression b_ret) {
 		name = _name;
 		owner = _owner;
@@ -134,7 +134,7 @@ public class JMethod {
 		return ret;
 	}
 
-	public int AssignablePara(ArrayList<JType> plist) {
+	public int AssignablePara(List<JType> plist) {
 		if (plist.size() != paras.size())
 			return paras.size() == 0 ? 1 : paras.size();
 
@@ -145,7 +145,7 @@ public class JMethod {
 		return 0;
 	}
 
-	public int SamePara(ArrayList<JType> plist) {
+	public int SamePara(List<JType> plist) {
 		if (plist.size() != paras.size())
 		return paras.size() == 0 ? 1 : paras.size();
 
