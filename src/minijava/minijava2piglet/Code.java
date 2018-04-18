@@ -102,15 +102,14 @@ public class Code {
         emit("calloc [2]\nBEGIN\n", "");
 
         mov(2, "0");
-        mov(3, "0");
-        mov(4, 0);
+        mov(3, 0);
 
         label(loop);
-        store(4, 0, 2);
-        plus(4, 4, "4");
-        lt(5, 4, "TEMP 1");
-        lt(5, 5, "1");
-        jump(loop, 5);
+        store(3, 0, 2);
+        plus(3, 3, "4");
+        lt(4, 3, "TEMP 1");
+        lt(4, 4, "1");
+        jump(loop, 4);
 
         emit("RETURN\n\t0\nEND\n\n", "");
     }
