@@ -2,7 +2,6 @@ package spiglet.spiglet2kanga;
 
 import java.io.*;
 import spiglet.*;
-import tools.ParseException;
 
 class SPP {
 	private static boolean b = true; // the first time using SpigletParser?
@@ -31,10 +30,15 @@ public class ToKanga {
 
         SPP.accept(f);
 
+        System.out.println("Compiling " + src);
         try {
-            SpigletParser.Goal();
+            Code.init(dst);
+            SpigletParser.Goal().accept(new GraphBuilder(), null);
+            Code.finish();
         } catch (ParseException e) {
             System.out.println(e.getMessage());
         }
+
+        System.out.println("DONE");
     }
 }
