@@ -109,7 +109,7 @@ public class JMethod {
 		body.st.accept(g, scope);
 		JVar ret = body.ret.accept(g, scope);
 
-		Code.emit("RETURN\n\tTEMP " + ret.Reg() + "\nEND\n", "", "\n");
+		Code.emit("RETURN\n\t" + Code.T(ret.Reg()) + "\nEND\n", "", "\n");
 	}
 
 	// ***** Attribute *****

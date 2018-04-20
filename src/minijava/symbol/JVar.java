@@ -1,5 +1,6 @@
 package minijava.symbol;
 
+import minijava.minijava2piglet.*;
 import minijava.syntaxtree.*;
 
 public class JVar {
@@ -7,11 +8,13 @@ public class JVar {
 	private Identifier id;
 	private Node where;
 	private JType type;
-	private int value = 0;	// for typecheck boolean literal only
-	private int reg = -1;	// TEMP (?) for piglet
-	private boolean assigned = false;	// for typecheck if unused
-	private boolean vola = false;	// is the Var volatile? ex. this.a, b[0]
-	private int base_reg = -1, bias = 0;	// address base (in reg) & bias
+	private int value = 0; // for typecheck boolean literal only
+	private int reg = -1; // TEMP (?) for piglet
+	private boolean assigned = false; // for typecheck if unused
+	private String literal = "";// is this Var JUST a literal? not "" <==> is a literal
+	private boolean literalLoad; // has this literal already been loaded?
+	private boolean vola = false; // is this Var volatile? ex. this.a, b[0]
+	private int base_reg = -1, bias = 0; // address base (in reg) & bias
 
 	public JVar(Identifier _id, JType _type) {
 		id = _id;
@@ -60,6 +63,12 @@ public class JVar {
 		return this;
 	}
 
+	public JVar setLiter(String val) {
+		literal = val;
+		literalLoad = false;
+		return this;
+	}
+
 	// ***** Attribute *****
 
 	public Identifier Node() {
@@ -87,7 +96,18 @@ public class JVar {
 	}
 
 	public int Reg() {
+		if (literal != "" && !literalLoad) {
+			Code.mov(reg, literal);
+			literalLoad = true;
+		}
 		return reg;
+	}
+
+	public String Exp() {
+		if (literal != "")
+			return literal;
+
+		return Code.T(reg);
 	}
 
 	public boolean isVola() {

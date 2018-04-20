@@ -21,10 +21,6 @@ public class Code extends CodeWriter {
         emit("MOVE " + T(dreg) + " " + exp);
     }
 
-    public static void mov(int dreg, int sreg) {
-        mov(dreg, "" + T(sreg));
-    }
-
     public static void lt(int dreg, int sreg, String exp) {
         mov(dreg, "LT " + T(sreg) + " " + exp);
     }
@@ -56,8 +52,8 @@ public class Code extends CodeWriter {
             emit("CJUMP " + T(ereg) + " " + label);
     }
 
-    public static void print(int sreg) {
-        emit("PRINT " + T(sreg));
+    public static void print(String exp) {
+        emit("PRINT " + exp);
     }
 
     public static void malloc(int dreg, String exp) {
@@ -80,7 +76,7 @@ public class Code extends CodeWriter {
         emit("calloc [2]\nBEGIN", "", "\n");
 
         mov(2, "0");
-        mov(3, 0);
+        mov(3, T(0));
         mov(4, "0");
 
         label(loop);

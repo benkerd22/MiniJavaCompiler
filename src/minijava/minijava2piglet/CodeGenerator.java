@@ -75,10 +75,10 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
             left.setBase(0);
 
             int treg = Reg.getnew();
-            Code.mov(treg, right.Reg());
+            Code.mov(treg, right.Exp());
             Code.store(left.baseReg(), left.Bias(), treg);
         } else
-            Code.mov(left.Reg(), right.Reg());
+            Code.mov(left.Reg(), right.Exp());
 
         return null;
     }
@@ -165,7 +165,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     public JVar visit(PrintStatement n, Scope scope) {
         JVar exp = n.f2.accept(this, scope);
 
-        Code.print(exp.Reg());
+        Code.print(exp.Exp());
 
         return null;
     }
@@ -181,7 +181,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         int rreg = Reg.getnew(); // result
 
         Code.lt(rreg, a.Reg(), "1");
-        Code.lt(rreg, rreg, T(b.Reg()));
+        Code.lt(rreg, rreg, b.Exp());
 
         return new JVar(n, MJava.Boolean()).bind(rreg);
     }
@@ -192,7 +192,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.lt(rreg, a.Reg(), T(b.Reg()));
+        Code.lt(rreg, a.Reg(), b.Exp());
 
         return new JVar(n, MJava.Boolean()).bind(rreg);
     }
@@ -203,7 +203,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.plus(rreg, a.Reg(), T(b.Reg()));
+        Code.plus(rreg, a.Reg(), b.Exp());
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -214,7 +214,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.minus(rreg, a.Reg(), T(b.Reg()));
+        Code.minus(rreg, a.Reg(), b.Exp());
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -225,7 +225,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.times(rreg, a.Reg(), T(b.Reg()));
+        Code.times(rreg, a.Reg(), b.Exp());
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -354,20 +354,20 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
     public JVar visit(IntegerLiteral n, Scope scope) {
         int treg = Reg.getnew();
-        Code.mov(treg, n.f0.toString());
-        return new JVar(n, MJava.Int()).bind(treg);
+        //Code.mov(treg, n.f0.toString());
+        return new JVar(n, MJava.Int()).bind(treg).setLiter(n.f0.toString());
     }
 
     public JVar visit(TrueLiteral n, Scope scope) {
         int treg = Reg.getnew();
-        Code.mov(treg, "1");
-        return new JVar(n, MJava.Boolean()).bind(treg);
+        //Code.mov(treg, "1");
+        return new JVar(n, MJava.Boolean()).bind(treg).setLiter("1");
     }
 
     public JVar visit(FalseLiteral n, Scope scope) {
         int treg = Reg.getnew();
-        Code.mov(treg, "0");
-        return new JVar(n, MJava.Boolean()).bind(treg);
+        //Code.mov(treg, "0");
+        return new JVar(n, MJava.Boolean()).bind(treg).setLiter("0");
     }
 
     public JVar visit(Identifier n, Scope scope) {
