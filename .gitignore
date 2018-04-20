@@ -1,4 +1,5 @@
 bin/
 .project
 samples/*.spg
+samples/*.kg
 judge/
