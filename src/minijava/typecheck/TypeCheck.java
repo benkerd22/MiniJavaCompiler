@@ -28,15 +28,22 @@ class MJP {
 }
 
 public abstract class TypeCheck {
-	public static boolean check(final File src) {
-		MJP.accept(src);
+	public static boolean check(String src) {
+		File f = new File(src);
+        if (!f.isFile()) {
+            System.out.println(src + " is not a folder nor a file");
+            return false;
+		}
+		
+		MJP.accept(f);
+		
 		try {
-			MJava.init(MiniJavaParser.Goal(), src.getName());
+			MJava.init(MiniJavaParser.Goal(), f.getName());
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
 		}
 
-		System.out.println("Type checking " + src.toPath());
+		System.out.println("Type checking " + f.toPath());
 		ErrorHandler.init();
 
 		MJava.buildClass();
@@ -49,27 +56,6 @@ public abstract class TypeCheck {
 		} else {
 			System.out.println("Done");
 			return true;
-		}
-	}
-
-	public static boolean check(String src) {
-		File f = new File(src);
-
-		if (f.isDirectory()) {
-			return false; // do not support dir
-			/*
-			File[] listOfFiles = f.listFiles();
-			for (File file : listOfFiles) {
-				if (file.isFile()) {
-					check(file);
-				}
-			}
-			*/
-		} else if (f.isFile()) {
-			return check(f);
-		} else {
-			System.out.println(src + " is not a folder nor a file");
-			return false;
 		}
 	}
 }

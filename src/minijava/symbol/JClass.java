@@ -243,7 +243,7 @@ public class JClass extends JType {
 	}
 
 	public void buildClassCode() {
-		Code.emit("new_" + Name() + " [0]\nBEGIN\n", "");
+		Code.emit("new_" + Name() + " [0]\nBEGIN", "", "\n");
 
 		if (mbiases.size() > 0) {
 			int max = Collections.max(mbiases.values()) + 4;
@@ -258,7 +258,7 @@ public class JClass extends JType {
 			Code.store(0, e.getValue(), 1);
 		}
 
-		Code.emit("RETURN\n\tTEMP 0\nEND\n\n", "");
+		Code.emit("RETURN\n\tTEMP 0\nEND\n", "", "\n");
 	}
 
 	public void buildMethodCode() {

@@ -78,14 +78,14 @@ public class JMethod {
 		Scope scope = newScope();
 
 		body.var.accept(g, scope);
-		Code.emit("MAIN\n", "");
+		Code.emit("MAIN", "", "\n");
 		body.st.accept(g, scope);
-		Code.emit("END\n\n", "");
+		Code.emit("END\n", "", "\n");
 	}
 
 	public void buildCode() {
 		if (index == 0) {
-			Code.emit("f0_" + Name() + " [0]\nBEGIN\n\tERROR\nRETURN\n\t0\nEND\n\n", "");
+			Code.emit("f0_" + Name() + " [0]\nBEGIN\n\tERROR\nRETURN\n\t0\nEND\n", "", "\n");
 			return;
 		}
 
@@ -95,11 +95,11 @@ public class JMethod {
 		body.para.accept(g, scope);
 		body.var.accept(g, scope);
 
-		if (paras.size() <= (20 - 1)) {
+		if (paras.size() <= (ToPiglet.maxCallParas - 1)) {
 			// remember that paras includes "this"
-			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN\n", "");
+			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [" + (paras.size() + 1) + "]\nBEGIN", "", "\n");
 		} else {
-			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [1]\nBEGIN\n", "");
+			Code.emit("f" + index + "_" + owner.Name() + "_" + Name() + " [1]\nBEGIN", "", "\n");
 			for (int i = 1; i <= paras.size(); i++) {
 				Code.load(i, 0, i * 4);
 			}
@@ -109,7 +109,7 @@ public class JMethod {
 		body.st.accept(g, scope);
 		JVar ret = body.ret.accept(g, scope);
 
-		Code.emit("RETURN\n\tTEMP " + ret.Reg() + "\nEND\n\n", "");
+		Code.emit("RETURN\n\tTEMP " + ret.Reg() + "\nEND\n", "", "\n");
 	}
 
 	// ***** Attribute *****

@@ -181,7 +181,7 @@ public class ScopeBuilder extends GJDepthFirst<JVar, Scope> {
 		class Entry {
 			ScopeBuilder sb;
 			Scope scope;
-			ArrayList<JType> list;
+			List<JType> list;
 		}
 
 		class ExpressionListHelper extends GJVoidDepthFirst<Entry> {

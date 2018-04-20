@@ -3,14 +3,15 @@ package minijava.minijava2piglet;
 import minijava.symbol.*;
 
 public class ToPiglet {
-    private static String ext(String s) { // change extension ".java" to ".spg"
-        return s.replace(".java", ".spg");
-    }
+    public static boolean checkOutOfIndex;
+    public static int maxCallParas;
 
-    public static void compile(String filename) {
-        System.out.println("Compiling " + filename);
+    public static void compile(String src, String dst) {
+        System.out.println("Compiling " + src);
 
-        Code.init(ext(filename));
+        checkOutOfIndex = false;    // Blame the EVIL Kanga Interpreter...
+        maxCallParas = 20;  // Blame the EVIL Piglet Interpreter...
+        Code.init(dst);
         MJava.buildCode();
         Code.finish();
 

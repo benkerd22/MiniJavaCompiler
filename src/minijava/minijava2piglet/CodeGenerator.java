@@ -108,7 +108,8 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.lt(ereg, preg, "TEMP " + lreg);
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
-        Code.error(); // out of index
+        if (ToPiglet.checkOutOfIndex)
+            Code.error();
 
         Code.label(ok);
         Code.plus(preg, a.Reg(), "TEMP " + preg);
@@ -245,7 +246,8 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.lt(ereg, preg, "TEMP " + lreg);
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
-        Code.error(); // out of index
+        if (ToPiglet.checkOutOfIndex)
+            Code.error();
 
         Code.label(ok);
         Code.plus(preg, a.Reg(), "TEMP " + preg);
@@ -270,7 +272,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         class Entry {
             CodeGenerator cg;
             Scope scope;
-            ArrayList<Integer> list;
+            List<Integer> list;
         }
 
         class ExpressionListHelper extends GJVoidDepthFirst<Entry> {
@@ -311,7 +313,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew();
 
-        if (e.list.size() <= 20) {
+        if (e.list.size() <= ToPiglet.maxCallParas) {
             Code.call(rreg, funcExp, e.list.toArray(new Integer[e.list.size()]));
         } else {
             int areg = Reg.getnew(); // array to store parameters
