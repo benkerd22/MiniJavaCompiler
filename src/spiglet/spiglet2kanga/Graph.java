@@ -5,7 +5,7 @@ import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
 class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
-    private List<Block> blocks;
+    private Set<Block> blocks;
     private Map<Integer, Block> entry; // Label entry ==> Block
     private Map<Block, Integer> jlist; // Block ==> jump to label
 
@@ -27,7 +27,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     //   20 ~ 23 : a*
 
     Graph(int argn_) {
-        blocks = new LinkedList<Block>();
+        blocks = new HashSet<Block>();
         entry = new HashMap<Integer, Block>();
         jlist = new HashMap<Block, Integer>();
         last = null;
@@ -109,11 +109,8 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         newBlock();
         entry.put(-1, now);
 
-        if (n == null) // Main route doesn't return
-            return;
-
-        if (n.f0.choice instanceof Temp) // If return TEMP instead of int ...
-            now.buildUseDef((Temp) n.f0.choice);
+        if (n != null) // if has a return expression
+            now.accept(new Stmt(new NodeChoice(new PrintStmt(n)))); // a fake PrintStmt for consistency
     }
 
     private void buildBlockPreds() {
@@ -149,16 +146,6 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
     void protect(Set<Integer> s) {
         protect.addAll(s);
-    }
-
-    private void liveAnalysis() {
-        for (Block b : blocks)
-            b.buildUseDef();
-
-        Block.buildInOut(new HashSet<Block>(blocks));
-
-        for (Block b : blocks)
-            b.buildRIG(this);
     }
 
     private void spill(int id) {
@@ -305,7 +292,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     void regAlloc() {
         buildBlockPreds();
 
-        liveAnalysis();
+        Block.liveAnalysis(blocks, this);
 
         preColorRIG();
         colorRIG();
@@ -354,8 +341,13 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     }
 
     String getExp(Node n, int tmp) {
-        if (n instanceof Temp)
-            return Code.REG[getReg((Temp) n, tmp, true)];
+        if (n instanceof Temp) {
+            int reg = getReg((Temp) n, tmp, true);
+            if (reg != -1)
+                return Code.REG[reg];
+            else
+                return "";
+        }
         else if (n instanceof IntegerLiteral)
             return ((IntegerLiteral) n).f0.toString();
         else if (n instanceof Label)

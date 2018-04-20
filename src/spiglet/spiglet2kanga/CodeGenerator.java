@@ -43,11 +43,13 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
 
     public void visit(MoveStmt n, Graph g) {
         int dreg = g.getReg(n.f1, Code.v1, false);
+        if (dreg == -1) {
+            if (n.f2.f0.choice instanceof Call)
+                n.f2.accept(this, g);
+            return;
+        }
 
         n.f2.accept(this, g);
-
-        if (dreg == -1)
-            return;
 
         Code.mov(dreg);
 
