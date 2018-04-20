@@ -12,14 +12,14 @@
         {
             "label": "build",
             "args": [
-                "-d ${workspaceRoot}/bin",
-                "-cp ${workspaceRoot}/bin",
-                "-sourcepath ${workspaceRoot}/src",
-                "-encoding UTF-8",
+                "-d", "${workspaceRoot}\\bin",
+                "-cp", "${workspaceRoot}\\bin",
+                "-sourcepath", "${workspaceRoot}\\src",
+                "-encoding", "UTF-8",
                 "-g",
                 "${file}"
             ],
-            "command": "C:/'Program Files'/java/jdk-9.0.4/bin/javac.exe"
+            "command": "C:/\"Program Files\"\\java\\jdk-9.0.4\\bin\\javac.exe"
             //"command": "$Env:JAVA_HOME/bin/javac.exe"
         }
     ]
