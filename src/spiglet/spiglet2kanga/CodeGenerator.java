@@ -4,7 +4,7 @@ import java.util.*;
 import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
-class CodeGenerator extends GJVoidDepthFirst<Graph> {
+class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only build code WITHIN a func
     public void visit(NoOpStmt n, Graph g) {
         Code.noop();
     }
@@ -38,7 +38,7 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> {
         Code.load(dreg, sreg, n.f3.f0.toString());
 
         if (dreg == Code.v1)
-            Code.sreg(g.spill.get(g.getTemp(n.f1)), Code.v1);
+            Code.sreg(g.getSpill(n.f1), Code.v1);
     }
 
     public void visit(MoveStmt n, Graph g) {
@@ -52,7 +52,7 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> {
         Code.mov(dreg);
 
         if (dreg == Code.v1)
-            Code.sreg(g.spill.get(g.getTemp(n.f1)), Code.v1);
+            Code.sreg(g.getSpill(n.f1), Code.v1);
     }
 
     public void visit(PrintStmt n, Graph g) {

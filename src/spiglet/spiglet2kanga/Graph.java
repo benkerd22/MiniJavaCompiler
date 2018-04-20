@@ -4,25 +4,27 @@ import java.util.*;
 import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
-class Graph { // A set of Blocks in a function
-    List<Block> blocks;
-    Map<Integer, Block> entry; // Label entry ==> Block
-    //Map<Integer, Set<Block>> backpatch; // Label ==> Blocks that jump to this label
-    Map<Block, Integer> jlist; // Block ==> jump to label
+class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
+    private List<Block> blocks;
+    private Map<Integer, Block> entry; // Label entry ==> Block
+    private Map<Block, Integer> jlist; // Block ==> jump to label
 
-    Block last, now;
+    private Block last, now;
 
-    int argn; // argn of this func
-    int maxCallArgn; // max argn of any call in this func
-    Map<Integer, Set<Integer>> RIG; // row id ==> elements in a row
-    Set<Integer> protect; // vars that MUST be assigned with s* registers
+    private int argn; // argn of this func
+    private int maxCallArgn; // max argn of any call in this func
+    private Map<Integer, Set<Integer>> RIG; // Register Interference Graph. row id ==> elements in a row
+    private Set<Integer> protect; // vars that MUST be assigned with s* registers
 
-    Map<Integer, Integer> alloc; // TEMP i ==> real register
-    Map<Integer, Integer> spill; // TEMP i ==> spill ID
-    boolean[] usedReg;
-    int usedS;
-    // 0 ~ 9 : t*
-    // 10 ~ 17 : s*
+    private Map<Integer, Integer> alloc; // TEMP i ==> real register
+    private Map<Integer, Integer> spill; // TEMP i ==> spill ID
+    private boolean[] usedReg;
+    private int usedS;
+    // Reg IDs
+    //   0  ~ 9  : t*
+    //   10 ~ 17 : s*
+    //   18 ~ 19 : v*
+    //   20 ~ 23 : a*
 
     Graph(int argn_) {
         blocks = new LinkedList<Block>();
@@ -46,11 +48,9 @@ class Graph { // A set of Blocks in a function
         return Integer.parseInt(n.f0.toString().substring(1));
     }
 
-    private int getVal(Temp n) {
-        return Integer.parseInt(n.f1.f0.toString());
-    }
+    // ***** Block Build *****
 
-    private void newBlock() {   // new Block always store in now
+    private void newBlock() { // new Block always store in now
         last = now;
         now = new Block();
         blocks.add(now);
@@ -94,7 +94,7 @@ class Graph { // A set of Blocks in a function
         } else if (st instanceof CJumpStmt) {
             jump = getVal(((CJumpStmt) st).f2);
         } else if (st instanceof ErrorStmt) {
-            jump = -1;  // jump to exit
+            jump = -1; // jump to exit
         }
 
         if (jump != 0) {
@@ -109,16 +109,14 @@ class Graph { // A set of Blocks in a function
         newBlock();
         entry.put(-1, now);
 
-        if (n == null)  // Main route doesn't return
+        if (n == null) // Main route doesn't return
             return;
 
-        if (n.f0.choice instanceof Temp) { // buildUseDef()
-            now.use.add(getVal((Temp) n.f0.choice));
-            now.in.add(getVal((Temp) n.f0.choice));
-        }
+        if (n.f0.choice instanceof Temp) // If return TEMP instead of int ...
+            now.buildUseDef((Temp) n.f0.choice);
     }
 
-    void release() {    // finish Block.pred build
+    private void buildBlockPreds() {
         for (Map.Entry<Block, Integer> e : jlist.entrySet()) {
             Block pred = e.getKey();
             int label = e.getValue();
@@ -127,31 +125,7 @@ class Graph { // A set of Blocks in a function
         }
     }
 
-    private void buildUseDef() {
-        for (Block b : blocks)
-            b.buildUseDef();
-    }
-
-    private void LiveAnalysis() {
-        Set<Block> changed = new HashSet<Block>(blocks);
-
-        while (!changed.isEmpty()) {
-            Block b = changed.iterator().next();
-            changed.remove(b);
-
-            Set<Integer> in = new HashSet<Integer>(b.out);
-            in.removeAll(b.def);
-            in.addAll(b.use);
-            b.in.addAll(in);
-
-            for (Block pred : b.Preds()) {
-                if (pred.out.containsAll(in))
-                    continue;
-                pred.out.addAll(in);
-                changed.add(pred);
-            }
-        }
-    }
+    // ***** Register Allocation *****
 
     void addEdge(int i, int j) {
         if (i == j) {
@@ -177,7 +151,12 @@ class Graph { // A set of Blocks in a function
         protect.addAll(s);
     }
 
-    private void buildRIG() { // register interference graph
+    private void liveAnalysis() {
+        for (Block b : blocks)
+            b.buildUseDef();
+
+        Block.buildInOut(new HashSet<Block>(blocks));
+
         for (Block b : blocks)
             b.buildRIG(this);
     }
@@ -323,29 +302,68 @@ class Graph { // A set of Blocks in a function
             spill.put(e.getKey(), e.getValue() + base);
     }
 
-    void work() {
-        release();
-        buildUseDef();
-        LiveAnalysis();
+    void regAlloc() {
+        buildBlockPreds();
 
-        buildRIG();
+        liveAnalysis();
+
         preColorRIG();
         colorRIG();
 
         checkReg();
         buildSpill();
+    }
 
-        for (Block b : blocks) {
-            //System.out.println(b + " " + b.Preds() + "\n" + b.in + "\t" + b.out);
-        }
+    // ***** Code Build *****
 
-        for (Map.Entry<Integer, Integer> e : alloc.entrySet()) {
-            //System.out.println("\tTEMP " + e.getKey() + " ==> " + e.getValue());
-        }
-        for (Map.Entry<Integer, Integer> e : spill.entrySet()) {
-            //System.out.println("\tTEMP " + e.getKey() + " SPILL " + e.getValue());
-        }
-        //System.out.println("\n");
+    int getTemp(Temp n) {
+        return Integer.parseInt(n.f1.f0.toString());
+    }
+
+    int getReg(Temp n) {
+        return getReg(n, Code.v1, true);
+    }
+
+    int getReg(Temp n, int tmp, boolean autoLoad) {
+        int t = getTemp(n);
+        return getReg(t, tmp, autoLoad);
+    }
+
+    int getReg(int t, int tmp, boolean autoLoad) {
+        // if autoLoad: spilled var --(load)--> reg tmp
+        if (spill.containsKey(t)) {
+            if (autoLoad)
+                Code.lreg(tmp, spill.get(t));
+            return tmp;
+        } else if (alloc.containsKey(t))
+            return alloc.get(t);
+        else
+            return -1; // dead temp
+    }
+
+    int getSpill(Temp n) {
+        int t = getTemp(n);
+        if (spill.containsKey(t))
+            return spill.get(t);
+        else
+            return -1;
+    }
+
+    String getExp(SimpleExp n) {
+        return getExp(n.f0.choice, Code.v1);
+    }
+
+    String getExp(Node n, int tmp) {
+        if (n instanceof Temp)
+            return Code.REG[getReg((Temp) n, tmp, true)];
+        else if (n instanceof IntegerLiteral)
+            return ((IntegerLiteral) n).f0.toString();
+        else if (n instanceof Label)
+            return ((Label) n).f0.toString();
+        else
+            System.out.println("ERROR");
+
+        return "";
     }
 
     void begin(Label funcID) {
@@ -397,44 +415,15 @@ class Graph { // A set of Blocks in a function
         Code.emit("END\n", "", "\n");
     }
 
-    public int getTemp(Temp n) {
-        return Integer.parseInt(n.f1.f0.toString());
-    }
+    // ***** Attribute *****
 
-    public int getReg(Temp n) {
-        return getReg(n, Code.v1, true);
-    }
-
-    public int getReg(Temp n, int tmp, boolean autoLoad) { // spilled var ==> reg tmp
-        int t = getTemp(n);
-        return getReg(t, tmp, autoLoad);
-    }
-
-    public int getReg(int t, int tmp, boolean autoLoad) {
-        if (spill.containsKey(t)) {
-            if (autoLoad)
-                Code.lreg(tmp, spill.get(t));
-            return tmp;
-        } else if (alloc.containsKey(t))
-            return alloc.get(t);
-        else
-            return -1; // dead temp
-    }
-
-    public String getExp(SimpleExp n) {
-        return getExp(n.f0.choice, Code.v1);
-    }
-
-    public String getExp(Node n, int tmp) {
-        if (n instanceof Temp)
-            return Code.REG[getReg((Temp) n, tmp, true)];
-        else if (n instanceof IntegerLiteral)
-            return ((IntegerLiteral) n).f0.toString();
-        else if (n instanceof Label)
-            return ((Label) n).f0.toString();
-        else
-            System.out.println("ERROR");
-
-        return "";
+    void show() {
+        for (Map.Entry<Integer, Integer> e : alloc.entrySet()) {
+            System.out.println("\tTEMP " + e.getKey() + " ==> " + e.getValue());
+        }
+        for (Map.Entry<Integer, Integer> e : spill.entrySet()) {
+            System.out.println("\tTEMP " + e.getKey() + " SPILL " + e.getValue());
+        }
+        System.out.println("\n");
     }
 }

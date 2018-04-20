@@ -3,8 +3,8 @@ package spiglet.spiglet2kanga;
 import tools.*;
 
 class Code extends CodeWriter {
-    static String[] REG = { "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "s0", "s1", "s2", "s3", "s4", "s5", "s6",
-            "s7", "v0", "v1", "a0", "a1", "a2", "a3" };
+    static String[] REG = { "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "s0", "s1", "s2", "s3", "s4",
+            "s5", "s6", "s7", "v0", "v1", "a0", "a1", "a2", "a3" };
     private static String buf = "";
     public static int t0 = 0, t9 = 9, s0 = 10, s7 = 17, v0 = 18, v1 = 19, a0 = 20;
 

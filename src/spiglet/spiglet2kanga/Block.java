@@ -5,12 +5,9 @@ import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
 class Block { // Basic Block in CFG
-    Set<Integer> in, out, use, def;
+    private Set<Integer> in, out, use, def;
     private Set<Block> preds; // predecessors
-
-    List<Stmt> stmts;
-
-    boolean finishRIG = false;
+    private List<Stmt> stmts; // statements
 
     Block() {
         in = new HashSet<Integer>();
@@ -21,20 +18,10 @@ class Block { // Basic Block in CFG
         stmts = new LinkedList<Stmt>();
     }
 
-    private int getVal(Temp n) {
-        return Integer.parseInt(n.f1.f0.toString());
-    }
-
-    private Temp deadTemp() {
-        return new Temp(new IntegerLiteral(new NodeToken("-1")));
-    }
+    // ***** Block Build *****
 
     void accept(Stmt n) {
         stmts.add(n);
-    }
-
-    int Size() {
-        return stmts.size();
     }
 
     void addPred(Block b) {
@@ -45,8 +32,10 @@ class Block { // Basic Block in CFG
         preds.remove(b);
     }
 
-    Set<Block> Preds() {
-        return preds;
+    // ***** Live Analysis *****
+
+    private int getVal(Temp n) {
+        return Integer.parseInt(n.f1.f0.toString());
     }
 
     void buildUseDef() {
@@ -77,18 +66,43 @@ class Block { // Basic Block in CFG
         }
     }
 
-    void addEdge(Graph g, Set<Integer> s) {
+    void buildUseDef(Temp n) {
+        // special build for "RETURN TEMP i" in exit block
+        use.add(getVal(n));
+    }
+
+    static void buildInOut(Set<Block> changed) {
+        while (!changed.isEmpty()) {
+            Block b = changed.iterator().next();
+            changed.remove(b);
+
+            Set<Integer> tmp = new HashSet<Integer>(b.out);
+            tmp.removeAll(b.def);
+            tmp.addAll(b.use);
+            b.in.addAll(tmp);
+
+            for (Block pred : b.preds) {
+                if (pred.out.containsAll(b.in))
+                    continue;
+                pred.out.addAll(b.in);
+                changed.add(pred);
+            }
+        }
+    }
+
+    private void addEdge(Graph g, Set<Integer> s) {
         for (int i : s)
             for (int j : s)
                 g.addEdge(i, j);
     }
 
-    void buildRIG(Graph g) { // find edges
-        if (finishRIG)
-            return;
-
+    void buildRIG(Graph g) { // find RIG edges
         Set<Integer> live = new HashSet<Integer>(out);
         class SetBuilder extends GJVoidDepthFirst<Graph> {
+            private Temp deadTemp() {
+                return new Temp(new IntegerLiteral(new NodeToken("-1")));
+            }
+
             public void visit(HLoadStmt n, Graph g) {
                 int t = getVal(n.f1);
                 if (!live.contains(t))
@@ -111,7 +125,7 @@ class Block { // Basic Block in CFG
 
             public void visit(Call n, Graph g) {
                 g.protect(live);
-                
+
                 n.f1.accept(this, g);
                 n.f3.accept(this, g);
             }
@@ -130,7 +144,5 @@ class Block { // Basic Block in CFG
         }
 
         addEdge(g, in);
-
-        finishRIG = true;
     }
 }
