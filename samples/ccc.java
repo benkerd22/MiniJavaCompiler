@@ -6,7 +6,7 @@ class ccc {
         int d;
         c = 1;
         d = 100;
-        a = new int[100];
+        a = new int[101];
         b = a[100];
     }
 }
@@ -23,7 +23,7 @@ class C extends A {
         i = 99999999;
 
         p = new int[10];
-        i = p[25];
+
         if (i < 10)
             p = new int[22];
         else
