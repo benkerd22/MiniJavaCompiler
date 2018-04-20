@@ -36,6 +36,10 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Reg.init();
     }
 
+    private String T(int reg) {
+        return Code.T(reg);
+    }
+
     public JVar visit(VarDeclaration n, Scope scope) {
         scope.declare(MJava.queryType(n.f0.f0.choice), n.f1);
         scope.queryVar(n.f1).bind(Reg.getnew());
@@ -105,14 +109,14 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.load(lreg, lpreg, 0);
 
         Code.times(preg, exp.Reg(), Integer.toString(ele.Size()));
-        Code.lt(ereg, preg, "TEMP " + lreg);
+        Code.lt(ereg, preg, T(lreg));
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
         if (ToPiglet.checkOutOfIndex)
             Code.error();
 
         Code.label(ok);
-        Code.plus(preg, a.Reg(), "TEMP " + preg);
+        Code.plus(preg, a.Reg(), T(preg));
         Code.store(preg, 0, right.Reg());
 
         return null;
@@ -177,7 +181,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         int rreg = Reg.getnew(); // result
 
         Code.lt(rreg, a.Reg(), "1");
-        Code.lt(rreg, rreg, "TEMP " + b.Reg());
+        Code.lt(rreg, rreg, T(b.Reg()));
 
         return new JVar(n, MJava.Boolean()).bind(rreg);
     }
@@ -188,7 +192,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.lt(rreg, a.Reg(), "TEMP " + b.Reg());
+        Code.lt(rreg, a.Reg(), T(b.Reg()));
 
         return new JVar(n, MJava.Boolean()).bind(rreg);
     }
@@ -199,7 +203,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.plus(rreg, a.Reg(), "TEMP " + b.Reg());
+        Code.plus(rreg, a.Reg(), T(b.Reg()));
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -210,7 +214,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.minus(rreg, a.Reg(), "TEMP " + b.Reg());
+        Code.minus(rreg, a.Reg(), T(b.Reg()));
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -221,7 +225,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         int rreg = Reg.getnew(); // result
 
-        Code.times(rreg, a.Reg(), "TEMP " + b.Reg());
+        Code.times(rreg, a.Reg(), T(b.Reg()));
 
         return new JVar(n, MJava.Int()).bind(rreg);
     }
@@ -243,14 +247,14 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.load(lreg, lpreg, 0);
 
         Code.times(preg, exp.Reg(), Integer.toString(ele.Size()));
-        Code.lt(ereg, preg, "TEMP " + lreg);
+        Code.lt(ereg, preg, T(lreg));
         Code.lt(ereg, ereg, "1");
         Code.jump(ok, ereg);
         if (ToPiglet.checkOutOfIndex)
             Code.error();
 
         Code.label(ok);
-        Code.plus(preg, a.Reg(), "TEMP " + preg);
+        Code.plus(preg, a.Reg(), T(preg));
         Code.load(vreg, preg, 0);
 
         return new JVar(n, ele).bind(vreg);
@@ -300,7 +304,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
             Code.load(preg, a.Reg(), 0);
             Code.load(freg, preg, mb);
-            funcExp = "TEMP " + freg;
+            funcExp = T(freg);
         }
 
         Entry e = new Entry();
@@ -385,7 +389,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         Code.times(sreg, exp.Reg(), Integer.toString(MJava.Int().Size())); // element is int
         Code.plus(areg, sreg, "4"); // 4 bytes space for .length
-        Code.malloc(preg, "TEMP " + areg);
+        Code.malloc(preg, T(areg));
         Code.store(preg, 0, sreg); // a[-1] <== size
         Code.plus(preg, preg, "4"); // &a[-1] -> &a[0]
         Code.call(Reg.getnew(), "calloc", preg, sreg);
@@ -400,7 +404,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         int vreg = Reg.getnew(); // VPTR
 
         Code.mov(sreg, Integer.toString(c.instanceSize() + 4)); // 4 bytes for VPTR
-        Code.malloc(preg, "TEMP " + sreg);
+        Code.malloc(preg, T(sreg));
         Code.call(Reg.getnew(), "calloc", preg, sreg); //calloc
         Code.call(vreg, "new_" + c.Name()); // get VPTR
         Code.store(preg, 0, vreg); // store VPTR

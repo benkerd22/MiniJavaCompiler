@@ -7,6 +7,10 @@ public class Code extends CodeWriter {
         emit(label + "\tNOOP", "", "\n");
     }
 
+    public static String T(int reg) {
+        return "TEMP " + reg;
+    }
+
     public static void error() {
         emit("ERROR");
     }
@@ -14,46 +18,46 @@ public class Code extends CodeWriter {
     // All the "String exp" bellow stands for "SimpleExp"
 
     public static void mov(int dreg, String exp) {
-        emit("MOVE TEMP " + dreg + " " + exp);
+        emit("MOVE " + T(dreg) + " " + exp);
     }
 
     public static void mov(int dreg, int sreg) {
-        mov(dreg, "TEMP " + sreg);
+        mov(dreg, "" + T(sreg));
     }
 
     public static void lt(int dreg, int sreg, String exp) {
-        mov(dreg, "LT TEMP " + sreg + " " + exp);
+        mov(dreg, "LT " + T(sreg) + " " + exp);
     }
 
     public static void plus(int dreg, int sreg, String exp) {
-        mov(dreg, "PLUS TEMP " + sreg + " " + exp);
+        mov(dreg, "PLUS " + T(sreg) + " " + exp);
     }
 
     public static void minus(int dreg, int sreg, String exp) {
-        mov(dreg, "MINUS TEMP " + sreg + " " + exp);
+        mov(dreg, "MINUS " + T(sreg) + " " + exp);
     }
 
     public static void times(int dreg, int sreg, String exp) {
-        mov(dreg, "TIMES TEMP " + sreg + " " + exp);
+        mov(dreg, "TIMES " + T(sreg) + " " + exp);
     }
 
     public static void load(int dreg, int breg, int bias) { // dst reg, base reg, bias
-        emit("HLOAD TEMP " + dreg + " TEMP " + breg + " " + bias);
+        emit("HLOAD " + T(dreg) + " " + T(breg) + " " + bias);
     }
 
     public static void store(int breg, int bias, int sreg) { // base reg, bias, src reg
-        emit("HSTORE TEMP " + breg + " " + bias + " TEMP " + sreg);
+        emit("HSTORE " + T(breg) + " " + bias + " " + T(sreg));
     }
 
     public static void jump(String label, int ereg) {
         if (ereg < 0)
             emit("JUMP " + label);
         else
-            emit("CJUMP TEMP " + ereg + " " + label);
+            emit("CJUMP " + T(ereg) + " " + label);
     }
 
     public static void print(int sreg) {
-        emit("PRINT TEMP " + sreg);
+        emit("PRINT " + T(sreg));
     }
 
     public static void malloc(int dreg, String exp) {
@@ -63,7 +67,7 @@ public class Code extends CodeWriter {
     public static void call(int rreg, String exp, Integer... pregs) {
         String args = "(";
         for (int preg : pregs) {
-            args += " TEMP " + preg;
+            args += " " + T(preg);
         }
         args += " )";
 
@@ -83,7 +87,7 @@ public class Code extends CodeWriter {
         store(3, 0, 2);
         plus(3, 3, "4");
         plus(4, 4, "4");
-        lt(5, 4, "TEMP 1");
+        lt(5, 4, T(1));
         lt(5, 5, "1");
         jump(loop, 5);
 
