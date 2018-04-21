@@ -212,6 +212,25 @@ class Block { // Basic Block in CFG
 
     // ***** Code Build *****
 
+    void argnInit(int argn, Graph g) { // only start block will invoke this
+        for (int args : out) {
+            if (args >= argn)
+                System.out.println("SOURCE FILE ERROR");
+
+            int reg = g.getReg(args, Code.v1, false);
+            if (reg == -1)
+                continue;
+
+            if (args < 4)
+                Code.mov(reg, Code.a0 + args);
+            else
+                Code.lreg(reg, args - 4); // TODO: SPILLED --> SPILLED ?
+
+            if (reg == Code.v1)
+                Code.sreg(g.getSpill(args), reg);
+        }
+    }
+
     void buildCode(Graph g) {
         Code.emit(g.getLabel(label), "", "");
 

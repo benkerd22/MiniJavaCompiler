@@ -62,17 +62,23 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
     }
 
     public void visit(Call n, Graph g) {
-        class ArgsListHelper extends GJVoidDepthFirst<List<Integer>> {
-            public void visit(Temp n, List<Integer> list) {
-                list.add(g.getReg(n));
+        final int[] argn = new int[1];
+        argn[0] = 0;
+
+        class ArgsListHelper extends DepthFirstVisitor {
+            public void visit(Temp n) {
+                int reg = g.getReg(n);
+
+                if (argn[0] < 4)
+                    Code.mov(Code.a0 + argn[0], reg);
+                else
+                    Code.pass(argn[0] - 3, reg);
+
+                argn[0]++;
             }
         }
 
-        List<Integer> list = new ArrayList<Integer>();
-        n.f3.accept(new ArgsListHelper(), list);
-
-        for (int i = 0; i < list.size(); i++)
-            Code.pass(list.get(i), i);
+        n.f3.accept(new ArgsListHelper());
 
         Code.call(g.getExp(n.f1));
     }

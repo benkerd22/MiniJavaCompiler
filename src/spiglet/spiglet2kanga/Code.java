@@ -63,12 +63,8 @@ class Code extends CodeWriter {
         emit("ASTORE SPILLEDARG " + spill + " " + REG[tmp]);
     }
 
-    public static void pass(int reg, int index) {
-        if (index < 4) {
-            mov(index + a0, reg);
-        } else {
-            emit("PASSARG " + (index - 3) + " " + REG[reg]);
-        }
+    public static void pass(int index, int reg) {
+        emit("PASSARG " + index + " " + REG[reg]);
     }
 
     public static void call(String exp) {
