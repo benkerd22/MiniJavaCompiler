@@ -83,6 +83,32 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         return null;
     }
 
+    private int checkOutOfIndex(int baseReg, int expReg, JType ele) {
+        String ok = Label.getnew();
+        int lreg = Reg.getnew(); // array length
+        int ereg = Reg.getnew(); // user lookup loc'
+        int rreg1 = Reg.getnew();
+        int rreg2 = Reg.getnew(); // compare results
+        int rreg3 = Reg.getnew();
+        int creg = Reg.getnew(); // conditional jump
+
+        Code.times(ereg, expReg, Integer.toString(ele.Size()));
+        Code.lt(rreg1, ereg, "0");
+        Code.lt(rreg1, rreg1, "1"); // rreg1 <== (i >= 0)
+
+        Code.load(lreg, baseReg, 0);
+        Code.lt(rreg2, ereg, T(lreg)); // rreg2 <== (i < length)
+
+        Code.plus(rreg3, rreg1, T(rreg2));
+        Code.lt(creg, rreg3, "2"); // (i >= 0) && (i < length)
+        Code.jump(ok, creg);
+        Code.error();
+
+        Code.label(ok);
+
+        return ereg;
+    }
+
     public JVar visit(ArrayAssignmentStatement n, Scope scope) {
         JVar a = n.f0.accept(this, scope);
         JType ele = ((JArray) a.Type()).ElementType(); // element type
@@ -99,25 +125,11 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         JVar exp = n.f2.accept(this, scope);
         JVar right = n.f5.accept(this, scope);
 
-        String ok = Label.getnew();
-        int preg = Reg.getnew(); // address pointer
-        int lpreg = Reg.getnew(); // address pointer (.length)
-        int lreg = Reg.getnew(); // length
-        int ereg = Reg.getnew();
+        int ereg = checkOutOfIndex(a.Reg(), exp.Reg(), ele); // expression value
+        int preg = Reg.getnew(); // *(preg + 4) <== where to store
 
-        Code.minus(lpreg, a.Reg(), "4");
-        Code.load(lreg, lpreg, 0);
-
-        Code.times(preg, exp.Reg(), Integer.toString(ele.Size()));
-        Code.lt(ereg, preg, T(lreg));
-        Code.lt(ereg, ereg, "1");
-        Code.jump(ok, ereg);
-        if (ToPiglet.checkOutOfIndex)
-            Code.error();
-
-        Code.label(ok);
-        Code.plus(preg, a.Reg(), T(preg));
-        Code.store(preg, 0, right.Reg());
+        Code.plus(preg, a.Reg(), T(ereg));
+        Code.store(preg, 4, right.Reg()); // 4 bias for .length
 
         return null;
     }
@@ -236,26 +248,12 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
 
         JVar exp = n.f2.accept(this, scope);
 
-        String ok = Label.getnew();
-        int preg = Reg.getnew(); // address pointer
-        int lpreg = Reg.getnew(); // address pointer (.length)
-        int lreg = Reg.getnew(); // length
-        int ereg = Reg.getnew();
-        int vreg = Reg.getnew(); // value
+        int ereg = checkOutOfIndex(a.Reg(), exp.Reg(), ele);
+        int preg = Reg.getnew();
+        int vreg = Reg.getnew();
 
-        Code.minus(lpreg, a.Reg(), "4");
-        Code.load(lreg, lpreg, 0);
-
-        Code.times(preg, exp.Reg(), Integer.toString(ele.Size()));
-        Code.lt(ereg, preg, T(lreg));
-        Code.lt(ereg, ereg, "1");
-        Code.jump(ok, ereg);
-        if (ToPiglet.checkOutOfIndex)
-            Code.error();
-
-        Code.label(ok);
-        Code.plus(preg, a.Reg(), T(preg));
-        Code.load(vreg, preg, 0);
+        Code.plus(preg, a.Reg(), T(ereg));
+        Code.load(vreg, preg, 4); // 4 bias for .length
 
         return new JVar(n, ele).bind(vreg);
     }
@@ -263,11 +261,8 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     public JVar visit(ArrayLength n, Scope scope) {
         JVar a = n.f0.accept(this, scope);
 
-        int lpreg = Reg.getnew(); // address pointer (.length)
         int lreg = Reg.getnew(); // length
-
-        Code.minus(lpreg, a.Reg(), "4");
-        Code.load(lreg, lpreg, 0);
+        Code.load(lreg, a.Reg(), 0);
 
         return new JVar(n, MJava.Int()).bind(lreg);
     }
@@ -386,15 +381,16 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         int sreg = Reg.getnew(); // size reg
         int areg = Reg.getnew(); // size reg for allocate
         int preg = Reg.getnew(); // array pointer reg
+        int creg = Reg.getnew(); // base reg for calloc
 
         Code.times(sreg, exp.Reg(), Integer.toString(MJava.Int().Size())); // element is int
         Code.plus(areg, sreg, "4"); // 4 bytes space for .length
         Code.malloc(preg, T(areg));
         Code.store(preg, 0, sreg); // a[-1] <== size
-        Code.plus(preg, preg, "4"); // &a[-1] -> &a[0]
-        Code.call(Reg.getnew(), "calloc", preg, sreg);
+        Code.plus(creg, preg, "4"); // &a[-1] -> &a[0]
+        Code.call(Reg.getnew(), "calloc", creg, sreg);
 
-        return new JVar(n, MJava.ArrayInt()).bind(preg);
+        return new JVar(n, MJava.ArrayInt()).bind(preg); // the array pointer IS &a[-1]
     }
 
     public JVar visit(AllocationExpression n, Scope scope) {
