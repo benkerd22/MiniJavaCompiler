@@ -15,6 +15,7 @@ class L {
 
 class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
     private List<Block> blocks;
+    private Block start, exit; // the Entry and Exit of function. for paras init and ErrorStmt
     private Block last, now;
 
     private Map<String, Block> entry; // Label entry ==> Block
@@ -41,12 +42,16 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         blocks = new LinkedList<Block>();
         last = new Block();
         now = new Block();
-
-        entry = new HashMap<String, Block>();
-        jlist = new HashMap<Block, String>();
-        labels = new HashMap<String, Integer>();
         blocks.add(now);
         now.addPred(last); // for dead block elimination
+
+        start = last;
+        exit = new Block();
+
+        entry = new HashMap<String, Block>();
+        entry.put("-1", exit);
+        jlist = new HashMap<Block, String>();
+        labels = new HashMap<String, Integer>();
 
         argn = argn_;
         maxCallArgn = 0;
@@ -128,9 +133,8 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         ret = n;
 
         newBlock();
-        entry.put("-1", now);
 
-        if (n != null) // if has a return expression
+        if (n != null) // if the func has a return expression
             now.accept(new Stmt(new NodeChoice(new PrintStmt(n)))); // a fake PrintStmt for consistency
     }
 
@@ -366,7 +370,10 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     }
 
     int getSpill(Temp n) {
-        int t = getTemp(n);
+        return getSpill(getTemp(n));
+    }
+
+    int getSpill(int t) {
         if (spill.containsKey(t))
             return spill.get(t);
         else
@@ -411,22 +418,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
             }
         }
 
-        for (int i = 0; i < argn; i++) {
-            int reg = getReg(i, Code.v1, false);
-
-            if (reg == -1)
-                continue;
-
-            if (i < 4)
-                Code.mov(reg, i + Code.a0);
-            else
-                Code.lreg(reg, i - 4);
-            // TODO: SPILLED --> SPILLED ?
-
-            if (reg == Code.v1) {
-                Code.sreg(spill.get(i), reg);
-            }
-        }
+        start.argnInit(argn, this);
     }
 
     private void end() {
