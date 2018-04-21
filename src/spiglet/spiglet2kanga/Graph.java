@@ -6,8 +6,8 @@ import spiglet.visitor.*;
 
 class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
     private Set<Block> blocks;
-    private Map<Integer, Block> entry; // Label entry ==> Block
-    private Map<Block, Integer> jlist; // Block ==> jump to label
+    private Map<String, Block> entry; // Label entry ==> Block
+    private Map<Block, String> jlist; // Block ==> jump to label
 
     private Block last, now;
 
@@ -28,8 +28,8 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
     Graph(int argn_) {
         blocks = new HashSet<Block>();
-        entry = new HashMap<Integer, Block>();
-        jlist = new HashMap<Block, Integer>();
+        entry = new HashMap<String, Block>();
+        jlist = new HashMap<Block, String>();
         last = null;
         now = new Block();
         blocks.add(now);
@@ -44,8 +44,8 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         usedS = 0;
     }
 
-    private int getVal(Label n) {
-        return Integer.parseInt(n.f0.toString().substring(1));
+    private String getVal(Label n) {
+        return n.f0.toString();
     }
 
     // ***** Block Build *****
@@ -88,16 +88,16 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         now.accept(n);
 
         Node st = n.f0.choice;
-        int jump = 0;
+        String jump = "";
         if (st instanceof JumpStmt) {
             jump = getVal(((JumpStmt) st).f1);
         } else if (st instanceof CJumpStmt) {
             jump = getVal(((CJumpStmt) st).f2);
         } else if (st instanceof ErrorStmt) {
-            jump = -1; // jump to exit
+            jump = "-1"; // jump to exit
         }
 
-        if (jump != 0) {
+        if (jump != "") {
             jlist.put(now, jump);
             newBlock();
             if (st instanceof JumpStmt || st instanceof ErrorStmt)
@@ -107,16 +107,16 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
     void stop(SimpleExp n) {
         newBlock();
-        entry.put(-1, now);
+        entry.put("-1", now);
 
         if (n != null) // if has a return expression
             now.accept(new Stmt(new NodeChoice(new PrintStmt(n)))); // a fake PrintStmt for consistency
     }
 
     private void buildBlockPreds() {
-        for (Map.Entry<Block, Integer> e : jlist.entrySet()) {
+        for (Map.Entry<Block, String> e : jlist.entrySet()) {
             Block pred = e.getKey();
-            int label = e.getValue();
+            String label = e.getValue();
             Block succ = entry.get(label);
             succ.addPred(pred);
         }
@@ -299,6 +299,8 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
         checkReg();
         buildSpill();
+
+        //show();
     }
 
     // ***** Code Build *****
