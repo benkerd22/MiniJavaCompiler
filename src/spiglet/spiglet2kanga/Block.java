@@ -5,11 +5,14 @@ import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
 class Block { // Basic Block in CFG
+    private String label;
     private Set<Integer> in, out, use, def;
     private Set<Block> preds, succs; // predecessors, successors
     private List<Stmt> stmts; // statements
+    private int vstmts; // valid statements (after dead code elimination)
 
     Block() {
+        label = "";
         in = new HashSet<Integer>();
         out = new HashSet<Integer>();
         use = new HashSet<Integer>();
@@ -17,9 +20,13 @@ class Block { // Basic Block in CFG
         preds = new HashSet<Block>();
         succs = new HashSet<Block>();
         stmts = new LinkedList<Stmt>();
+        vstmts = 0;
     }
 
     // ***** Block Build *****
+    void accept(String label_) {
+        label = label_;
+    }
 
     void accept(Stmt n) {
         stmts.add(n);
@@ -33,6 +40,39 @@ class Block { // Basic Block in CFG
     void removePred(Block b) {
         preds.remove(b);
         b.succs.remove(this);
+    }
+
+    static void checkDeadBlock(List<Block> blocks) {
+        List<Block> t = new LinkedList<Block>(blocks);
+        for (Block b : t)
+            if (b.preds.size() == 0) { // b is a dead block
+                for (Block succ : b.succs)
+                    succ.preds.remove(b);
+                blocks.remove(b);
+            }
+    }
+
+    static void checkLabel(List<Block> blocks, Graph g) { // kill and merge useless labels
+        Block last = null;
+        for (Block b : blocks) {
+            if (last != null && last.vstmts == 0 && last.label != "" && b.label != "") {
+                g.mergeLabel(last.label, b.label); // last.label = b.label
+                last.label = "";
+            }
+
+            boolean useless = true;
+            for (Block pred : b.preds) {
+                if (pred != last) {
+                    useless = false;
+                    break;
+                }
+            }
+
+            if (useless)
+                g.killLabel(b.label);
+
+            last = b;
+        }
     }
 
     // ***** Live Analysis *****
@@ -50,20 +90,27 @@ class Block { // Basic Block in CFG
                 g.addEdge(i, j);
     }
 
-    boolean scan(Graph g, boolean init) { // init : the first time to build use, def?
+    private boolean scan(Graph g, boolean init) { // init : the first time to build use, def?
+        final int[] vn = new int[1]; // valid Stmt count
         final Set<Integer> live = new HashSet<Integer>(out);
         use.clear();
         def.clear();
+        vn[0] = stmts.size();
 
         class BlockScanner extends GJVoidDepthFirst<Graph> {
             private Temp deadTemp() {
                 return new Temp(new IntegerLiteral(new NodeToken("-1")));
             }
 
+            public void visit(NoOpStmt n, Graph g) {
+                vn[0]--;
+            }
+
             public void visit(HLoadStmt n, Graph g) {
                 int t = getVal(n.f1);
                 if (!live.contains(t) && !init) {
                     n.f1 = deadTemp();
+                    vn[0]--;
                 } else {
                     live.remove(t);
                     use.remove(t);
@@ -80,6 +127,8 @@ class Block { // Basic Block in CFG
 
                     if (n.f2.f0.choice instanceof Call)
                         n.f2.accept(this, g);
+                    else
+                        vn[0]--;
                 } else {
                     live.remove(t);
                     use.remove(t);
@@ -103,13 +152,14 @@ class Block { // Basic Block in CFG
             }
         }
 
-        BlockScanner sb = new BlockScanner();
+        BlockScanner bs = new BlockScanner();
         for (ListIterator<Stmt> i = stmts.listIterator(stmts.size()); i.hasPrevious();) {
             addEdge(g, live);
 
             Stmt st = i.previous();
-            st.accept(sb, g);
+            st.accept(bs, g);
         }
+        vstmts = vn[0];
 
         addEdge(g, live);
 
@@ -158,5 +208,15 @@ class Block { // Basic Block in CFG
 
         for (Block b : blocks)
             b.scan(g, false);
+    }
+
+    // ***** Code Build *****
+
+    void buildCode(Graph g) {
+        Code.emit(g.getLabel(label), "", "");
+
+        CodeGenerator cg = new CodeGenerator();
+        for (Stmt s : stmts)
+            s.accept(cg, g);
     }
 }

@@ -14,11 +14,11 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
     }
 
     public void visit(CJumpStmt n, Graph g) {
-        Code.jump(n.f2.f0.toString(), g.getReg(n.f1));
+        Code.jump(g.getLabel(n.f2.f0.toString()), g.getReg(n.f1));
     }
 
     public void visit(JumpStmt n, Graph g) {
-        Code.jump(n.f1.f0.toString(), -1);
+        Code.jump(g.getLabel(n.f1.f0.toString()), -1);
     }
 
     public void visit(HStoreStmt n, Graph g) {
@@ -61,12 +61,6 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
         Code.print(g.getExp(n.f1));
     }
 
-    public void visit(StmtExp n, Graph g) {
-        n.f1.accept(this, g);
-        Code.mov_(g.getExp(n.f3));
-        Code.mov(Code.v0);
-    }
-
     public void visit(Call n, Graph g) {
         class ArgsListHelper extends GJVoidDepthFirst<List<Integer>> {
             public void visit(Temp n, List<Integer> list) {
@@ -95,10 +89,5 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
         // only from MoveStmt -> Exp -> SimpleExp can reach here
         // must be a mov
         Code.mov_(g.getExp(n));
-    }
-
-    public void visit(Label n, Graph g) {
-        // only from StmtList -> Label | Procedure -> Label can reach here
-        Code.emit(n.f0.toString(), "", "");
     }
 }

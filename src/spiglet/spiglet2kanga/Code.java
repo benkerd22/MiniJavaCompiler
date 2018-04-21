@@ -9,7 +9,7 @@ class Code extends CodeWriter {
     public static int t0 = 0, t9 = 9, s0 = 10, s7 = 17, v0 = 18, v1 = 19, a0 = 20;
 
     public static void noop() {
-        emit("NOOP");
+        emit("", "", ""); // ignore NOOP
     }
 
     public static void error() {
@@ -17,6 +17,9 @@ class Code extends CodeWriter {
     }
 
     public static void jump(String label, int reg) {
+        if (label == "")
+            return;
+
         if (reg < 0) {
             emit("JUMP " + label);
         } else {

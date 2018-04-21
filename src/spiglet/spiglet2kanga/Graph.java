@@ -4,18 +4,29 @@ import java.util.*;
 import spiglet.syntaxtree.*;
 import spiglet.visitor.*;
 
+class L {
+    private static int n = 0; // label id starts at 1
+
+    static int getnew() {
+        n++;
+        return n;
+    }
+}
+
 class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
-    private Set<Block> blocks;
+    private List<Block> blocks;
+    private Block last, now;
+
     private Map<String, Block> entry; // Label entry ==> Block
     private Map<Block, String> jlist; // Block ==> jump to label
-
-    private Block last, now;
+    private Map<String, Integer> labels; // origin label ==> L*, for useless label elimination
 
     private int argn; // argn of this func
     private int maxCallArgn; // max argn of any call in this func
+    private SimpleExp ret; // return TEMP of this func
+
     private Map<Integer, Set<Integer>> RIG; // Register Interference Graph. row id ==> elements in a row
     private Set<Integer> protect; // vars that MUST be assigned with s* registers
-
     private Map<Integer, Integer> alloc; // TEMP i ==> real register
     private Map<Integer, Integer> spill; // TEMP i ==> spill ID
     private boolean[] usedReg;
@@ -27,15 +38,20 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     //   20 ~ 23 : a*
 
     Graph(int argn_) {
-        blocks = new HashSet<Block>();
+        blocks = new LinkedList<Block>();
+        last = new Block();
+        now = new Block();
+
         entry = new HashMap<String, Block>();
         jlist = new HashMap<Block, String>();
-        last = null;
-        now = new Block();
+        labels = new HashMap<String, Integer>();
         blocks.add(now);
+        now.addPred(last); // for dead block elimination
 
         argn = argn_;
         maxCallArgn = 0;
+        ret = null;
+
         RIG = new HashMap<Integer, Set<Integer>>();
         protect = new HashSet<Integer>();
         alloc = new HashMap<Integer, Integer>();
@@ -76,13 +92,16 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         }
     }
 
-    void accept(Label n) {
+    void stmt(Label n) {
         newBlock();
 
+        String label = n.f0.toString();
+        now.accept(label);
         entry.put(getVal(n), now);
+        labels.put(label, L.getnew());
     }
 
-    void accept(Stmt n) {
+    void stmt(Stmt n) {
         checkCall(n);
 
         now.accept(n);
@@ -105,7 +124,9 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         }
     }
 
-    void stop(SimpleExp n) {
+    void ret(SimpleExp n) {
+        ret = n;
+
         newBlock();
         entry.put("-1", now);
 
@@ -120,6 +141,18 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
             Block succ = entry.get(label);
             succ.addPred(pred);
         }
+    }
+
+    void mergeLabel(String lold, String lnew) {
+        int l = labels.get(lold);
+        int ln = labels.get(lnew);
+        for (Map.Entry<String, Integer> e : labels.entrySet())
+            if (e.getValue() == l)
+                labels.put(e.getKey(), ln);
+    }
+
+    void killLabel(String label) {
+        labels.put(label, 0);
     }
 
     // ***** Register Allocation *****
@@ -291,8 +324,11 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
     void regAlloc() {
         buildBlockPreds();
+        Block.checkDeadBlock(blocks);
 
-        Block.liveAnalysis(blocks, this);
+        Block.liveAnalysis(new HashSet<Block>(blocks), this);
+
+        Block.checkLabel(blocks, this);
 
         preColorRIG();
         colorRIG();
@@ -318,8 +354,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         return getReg(t, tmp, autoLoad);
     }
 
-    int getReg(int t, int tmp, boolean autoLoad) {
-        // if autoLoad: spilled var --(load)--> reg tmp
+    int getReg(int t, int tmp, boolean autoLoad) { // if autoLoad: spilled var --(load)--> reg tmp
         if (spill.containsKey(t)) {
             if (autoLoad)
                 Code.lreg(tmp, spill.get(t));
@@ -349,8 +384,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
                 return Code.REG[reg];
             else
                 return "";
-        }
-        else if (n instanceof IntegerLiteral)
+        } else if (n instanceof IntegerLiteral)
             return ((IntegerLiteral) n).f0.toString();
         else if (n instanceof Label)
             return ((Label) n).f0.toString();
@@ -360,16 +394,14 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         return "";
     }
 
-    void begin(Label funcID) {
-        String code;
-        if (funcID != null)
-            code = funcID.f0.toString();
-        else
-            code = "MAIN";
+    String getLabel(String label) {
+        int i = labels.get(label);
+        return i > 0 ? "L" + i : "";
+    }
 
-        code += " [" + argn + "][" + (Math.max(argn - 4, 0) + usedS + spill.size()) + "][" + maxCallArgn + "]\n";
-
-        Code.emit(code, "", "");
+    private void begin(String funcID) {
+        Code.emit(funcID + " [" + argn + "][" + (Math.max(argn - 4, 0) + usedS + spill.size()) + "][" + maxCallArgn
+                + "]\n", "", "");
 
         int j = 0;
         for (int i = Code.s0; i <= Code.s7; i++) {
@@ -397,7 +429,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         }
     }
 
-    void end() {
+    private void end() {
         int j = usedS - 1;
         for (int i = Code.s7; i >= Code.s0; i--) {
             if (usedReg[i]) {
@@ -407,6 +439,24 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         }
 
         Code.emit("END\n", "", "\n");
+    }
+
+    void buildCode(Label funcID) {
+        begin(funcID == null ? "MAIN" : funcID.f0.toString());
+
+        Block b = null;
+        for (Iterator<Block> i = blocks.iterator(); i.hasNext();) {
+            if (b != null)
+                b.buildCode(this);
+            b = i.next();
+        }
+
+        if (ret != null) {
+            Code.mov_(getExp(ret));
+            Code.mov(Code.v0);
+        }
+
+        end();
     }
 
     // ***** Attribute *****
