@@ -19,7 +19,7 @@ To typecheck and compile a Mini-Java source file `a.java` to Kanga, use:
 
     java -cp bin Main a.java
 
-If typecheck succeeds, a Kanga source file `a.kg` and a Spiglet source file `a.spg` (with the same name) will be created at the same directory. Otherwise the program will report the errors and terminate.
+If typecheck succeeds, a Kanga source file `a.kg` (with the same name) will be created at the same directory. Otherwise the program will report the errors and terminate.
 
 ### Judge
 
