@@ -15,7 +15,7 @@ class L {
 
 class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a function
     private List<Block> blocks;
-    private Block start, exit; // the Entry and Exit of function. for paras init and ErrorStmt
+    private Block start, exit; // the Entry and Exit of this function. for paras init and ErrorStmt
     private Block last, now;
 
     private Map<String, Block> entry; // Label entry ==> Block
@@ -23,6 +23,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     private Map<String, Integer> labels; // origin label ==> L*, for useless label elimination
 
     private int argn; // argn of this func
+    private int realArgn; // the last index of the ACTUALLY used args. ie. foo(a, b, c), only b is used, then realArgn <== 2
     private int maxCallArgn; // max argn of any call in this func
     private SimpleExp ret; // return TEMP of this func
 
@@ -54,6 +55,7 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         labels = new HashMap<String, Integer>();
 
         argn = argn_;
+        realArgn = -1;
         maxCallArgn = 0;
         ret = null;
 
@@ -315,13 +317,15 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
         for (Map.Entry<Integer, Integer> e : alloc.entrySet())
             usedReg[e.getValue()] = true;
 
+        usedS = 0;
         for (int i = Code.s0; i <= Code.s7; i++)
             if (usedReg[i])
                 usedS++;
     }
 
     private void buildSpill() {
-        int base = Math.max(argn - 4, 0) + usedS;
+        realArgn = start.realArgn(argn);
+        int base = Math.max(realArgn - 4, 0) + usedS;
         for (Map.Entry<Integer, Integer> e : spill.entrySet())
             spill.put(e.getKey(), e.getValue() + base);
     }
@@ -407,8 +411,10 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     }
 
     private void begin(String funcID) {
-        Code.emit(funcID + " [" + argn + "][" + (Math.max(argn - 4, 0) + usedS + spill.size()) + "][" + maxCallArgn
-                + "]\n", "", "");
+        int actualNeed = Math.max(realArgn - 4, 0) + usedS + spill.size();
+        Code.emit(
+                funcID + " [" + argn + "][" + Math.max(actualNeed, Math.max(argn - 4, 0)) + "][" + maxCallArgn + "]\n",
+                "", ""); // func should at least ask for (argn-4) stack slots, although not actually need
 
         int j = 0;
         for (int i = Code.s0; i <= Code.s7; i++) {
