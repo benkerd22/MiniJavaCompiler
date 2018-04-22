@@ -3,17 +3,32 @@ class ccc {
         int[] a;
         int b;
         int c;
+        int ccc;
         int d;
+        int ddd;
+        A t;
         c = 1;
+        ccc = 0;
         d = 100;
         a = new int[101];
-        b = a[100];
+        ddd = ccc - c;
+        b = a[ddd];
+
+		System.out.println(a.length);
+		System.out.println(a[55]);
+        System.out.println(new A1().a());
+        System.out.println(new A2().b());
+        System.out.println(new A3().a());
+        System.out.println(new A3().b());
+
+        t = new C();
+        System.out.println(t.i());
     }
 }
 
 class C extends A {
     public int j() {
-        return 0;
+        return 666;
     }
 
     public int i() {
@@ -42,7 +57,7 @@ class A {
     int i;
 
     public int index(int uu, boolean jj, int[] qq, B bb) {
-        return 0;
+        return uu;
     }
 
     public int i() {
@@ -73,8 +88,28 @@ class B {
 
 class A1 {
     int i;
+    
+    public int a() {
+        return 1;
+    }
 }
 
 class A2 extends A1 {
     boolean i;
+
+    public int b() {
+        return 2;
+    }
+}
+
+class A3 extends A2 {
+    boolean i;
+
+    public int a() {
+        return 3;
+    }
+
+    public int b() {
+        return 4;
+    }
 }
