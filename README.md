@@ -9,7 +9,7 @@ Features:
 
 To build this project, use the following command at the root of this repository:
 
-    javac -d bin -sourcepath src -encoding UTF-8 src/Main.java
+    javac -d bin -sourcepath src src/Main.java
 
 the executable files will be stored in `bin` .
 
@@ -25,4 +25,4 @@ If typecheck succeeds, a Kanga source file `a.kg` (with the same name) will be c
 
 To check the correctness, just click and run the `judge/judge.bat` in Windows. It will go through every `.java` file in the `sample` directory, and check if the output files have the same behaviour(output) as the origin Mini-Java source file.
 
-It requires the sPiglet Parser [`judge/spp.jar`](http://compilers.cs.ucla.edu/cs132/software/spp.jar) , the Piglet Interpreter [`judge/pgi.jar`](http://compilers.cs.ucla.edu/cs132/software/pgi.jar) and the Kanga Interpreter [`judge/kgi.jar`](http://compilers.cs.ucla.edu/cs132/software/kgi.jar)
+It requires the sPiglet Parser [`judge/spp.jar`](http://compilers.cs.ucla.edu/cs132/software/spp.jar) , the Piglet Interpreter [`judge/pgi.jar`](http://compilers.cs.ucla.edu/cs132/software/pgi.jar) and the Kanga Interpreter [`judge/kgi.jar`](http://compilers.cs.ucla.edu/cs132/software/kgi.jar).

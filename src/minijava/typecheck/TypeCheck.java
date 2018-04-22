@@ -5,10 +5,13 @@ import minijava.*;
 import minijava.symbol.*;
 import tools.*;
 
-// 整型字面值过大
-// 缺少主类
-// 死代码消除（警告）
-// 同名的变量和方法（警告）
+/*
+TypeCheck Bonus
+	Too big integer literal
+	Wrong main class name
+	Dead code (warning)
+	Method and Var have the same name (warning)
+*/
 
 class MJP {
 	private static boolean b = true; // the first time using MiniJavaParser?
@@ -41,6 +44,7 @@ public abstract class TypeCheck {
 			MJava.init(MiniJavaParser.Goal(), f.getName());
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
+			return false;
 		}
 
 		System.out.println("Type checking " + f.toPath());
