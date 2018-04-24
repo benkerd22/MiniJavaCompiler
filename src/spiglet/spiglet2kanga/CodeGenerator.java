@@ -88,7 +88,7 @@ class CodeGenerator extends GJVoidDepthFirst<Graph> { // this generator only bui
     }
 
     public void visit(BinOp n, Graph g) {
-        Code.op(n.f0.f0.choice.toString(), g.getReg(n.f1), g.getExp(n.f2));
+        Code.op(n.f0.f0.choice.toString(), g.getReg(n.f1, Code.v1, true), g.getExp(n.f2.f0.choice, Code.v0));
     }
 
     public void visit(SimpleExp n, Graph g) {
