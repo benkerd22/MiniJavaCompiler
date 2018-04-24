@@ -150,10 +150,10 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
     }
 
     void mergeLabel(String lold, String lnew) {
-        int l = labels.get(lold);
+        int lo = labels.get(lold);
         int ln = labels.get(lnew);
         for (Map.Entry<String, Integer> e : labels.entrySet())
-            if (e.getValue() == l)
+            if (e.getValue() == lo)
                 labels.put(e.getKey(), ln);
     }
 
@@ -332,10 +332,10 @@ class Graph { // CFG (Control Flow Graph), or a set of basic Blocks in a functio
 
     void regAlloc() {
         buildBlockPreds();
-        Block.checkDeadBlock(blocks);
 
         Block.liveAnalysis(new HashSet<Block>(blocks), this);
 
+        Block.checkDeadBlock(blocks);
         Block.checkLabel(blocks, this);
 
         preColorRIG();

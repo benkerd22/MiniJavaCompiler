@@ -55,11 +55,6 @@ class Block { // Basic Block in CFG
     static void checkLabel(List<Block> blocks, Graph g) { // kill and merge useless labels
         Block last = null;
         for (Block b : blocks) {
-            if (last != null && last.vstmts == 0 && last.label != "" && b.label != "") {
-                g.mergeLabel(last.label, b.label); // last.label = b.label
-                last.label = "";
-            }
-
             boolean useless = true;
             for (Block pred : b.preds) {
                 if (pred != last) {
@@ -68,11 +63,22 @@ class Block { // Basic Block in CFG
                 }
             }
 
-            if (useless)
+            if (useless && b.label != "")
                 g.killLabel(b.label);
 
             last = b;
         }
+
+        for (Block b : blocks)
+            if (b.vstmts == 0 && b.succs.size() == 1) {
+                Block succ = b.succs.iterator().next();
+                if (b.label != "" && succ.label != "") {
+                    g.mergeLabel(b.label, succ.label);
+                    b.label = "";
+                    if (b.preds.size() == 1) // ie. pred(1) --> b -(jump)-> succ(1) ((1): only has one element). so after merging label, b can be eliminated
+                        b.stmts.clear();
+                }
+            }
     }
 
     // ***** Live Analysis *****
@@ -103,6 +109,16 @@ class Block { // Basic Block in CFG
             }
 
             public void visit(NoOpStmt n, Graph g) {
+                vn[0]--;
+            }
+
+            public void visit(JumpStmt n, Graph g) {
+                vn[0]--;
+            }
+
+            public void visit(CJumpStmt n, Graph g) {
+                n.f1.accept(this, g);
+
                 vn[0]--;
             }
 
@@ -241,7 +257,8 @@ class Block { // Basic Block in CFG
     }
 
     void buildCode(Graph g) {
-        Code.emit(g.getLabel(label), "", "");
+        if (label != "")
+            Code.emit(g.getLabel(label), "", "");
 
         CodeGenerator cg = new CodeGenerator();
         for (Stmt s : stmts)
