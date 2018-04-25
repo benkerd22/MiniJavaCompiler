@@ -23,7 +23,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			String f = "samples\\ccc.java"; // default source file
+			String f = "samples\\Factorial.java"; // default source file
 			if (args.length > 0)
 				f = args[0];
 
@@ -35,10 +35,15 @@ public class Main {
 					return;
 
 				ToPiglet.compile(f, n + ".spg");
+				ToKanga.isNative = true;
 			case ".spg":
 				ToKanga.compile(n + ".spg", n + ".kg");
+				ToMIPS.isNative = true;
 			case ".kg":
 				ToMIPS.compile(n + ".kg", n + ".s");
+				break;
+			default:
+				System.out.println(f + " should have an extension of .java");
 			}
 		} catch (Exception e) {
 			System.out.println("Oops");

@@ -4,23 +4,25 @@ import java.io.*;
 import spiglet.*;
 
 class SPP {
-	private static boolean b = true; // the first time using SpigletParser?
+    private static boolean b = true; // the first time using SpigletParser?
 
-	public static void accept(final File f) {
-		try {
-			InputStream inf = new FileInputStream(f);
-			if (b) {
-				new SpigletParser(inf);
-				b = false;
-			} else
-				SpigletParser.ReInit(inf);
-		} catch (FileNotFoundException e) {
-			System.out.println(e.getMessage());
-		}
-	}
+    public static void accept(final File f) {
+        try {
+            InputStream inf = new FileInputStream(f);
+            if (b) {
+                new SpigletParser(inf);
+                b = false;
+            } else
+                SpigletParser.ReInit(inf);
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }
 
 public class ToKanga {
+    public static boolean isNative = false;
+
     public static void compile(String src, String dst) {
         File f = new File(src);
         if (!f.isFile()) {
@@ -39,6 +41,6 @@ public class ToKanga {
             System.out.println(e.getMessage());
         }
 
-        System.out.println("DONE");
+        System.out.println("Done");
     }
 }
