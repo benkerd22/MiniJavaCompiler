@@ -86,18 +86,17 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
     private int checkOutOfIndex(int baseReg, int expReg, JType ele) {
         String ok = Label.getnew();
         int lreg = Reg.getnew(); // array length
-        int ereg = Reg.getnew(); // user lookup loc'
         int rreg1 = Reg.getnew();
         int rreg2 = Reg.getnew(); // compare results
         int rreg3 = Reg.getnew();
         int creg = Reg.getnew(); // conditional jump
+        int ereg = Reg.getnew(); // user lookup loc'
 
-        Code.times(ereg, expReg, Integer.toString(ele.Size()));
-        Code.lt(rreg1, ereg, "0");
+        Code.lt(rreg1, expReg, "0");
         Code.lt(rreg1, rreg1, "1"); // rreg1 <== (i >= 0)
 
         Code.load(lreg, baseReg, 0);
-        Code.lt(rreg2, ereg, T(lreg)); // rreg2 <== (i < length)
+        Code.lt(rreg2, expReg, T(lreg)); // rreg2 <== (i < length)
 
         Code.plus(rreg3, rreg1, T(rreg2));
         Code.lt(creg, rreg3, "2"); // (i >= 0) && (i < length)
@@ -105,6 +104,7 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.error();
 
         Code.label(ok);
+        Code.times(ereg, expReg, Integer.toString(ele.Size()));
 
         return ereg;
     }
@@ -386,8 +386,8 @@ public class CodeGenerator extends GJDepthFirst<JVar, Scope> {
         Code.times(sreg, exp.Reg(), Integer.toString(MJava.Int().Size())); // element is int
         Code.plus(areg, sreg, "4"); // 4 bytes space for .length
         Code.malloc(preg, T(areg));
-        Code.store(preg, 0, sreg); // a[-1] <== size
-        Code.plus(creg, preg, "4"); // &a[-1] -> &a[0]
+        Code.store(preg, 0, exp.Reg()); // a[-1] <== .length
+        Code.plus(creg, preg, "4");
         Code.call(Reg.getnew(), "calloc", creg, sreg);
 
         return new JVar(n, MJava.ArrayInt()).bind(preg); // the array pointer IS &a[-1]
